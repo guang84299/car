@@ -4,11 +4,12 @@
 
 module.exports = {
 
-    myCarSpeed: 200,
+    myCarSpeed: 250,
     myCarRotateSpeed: 120,
+    myCarEatRange: 100,
 
     carLv:[
-        {lv:1,speed:1.0,rotateSpeed:0.8},
+        {lv:1,speed:0.95,rotateSpeed:0.8},
         {lv:2,speed:1.1,rotateSpeed:1.0},
         {lv:3,speed:1.5,rotateSpeed:1.2},
         {lv:4,speed:1.8,rotateSpeed:1.5}
@@ -37,7 +38,7 @@ module.exports = {
         {m:20,lv1:0,lv2:0,lv3:0.3,lv4:0.7,num:12}
     ],
 
-    //升级
+    //加速时间升级
     myCarUp: [
         {lv:1,time:8,cost:0},
         {lv:2,time:10,cost:1000},

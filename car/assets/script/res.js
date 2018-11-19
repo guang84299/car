@@ -5,13 +5,18 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
-        fishs: {
-            default: [],
-            type: cc.Prefab
-        },
-        tishi: {
+
+        toast: {
             default: null,
             type: cc.Prefab
+        },
+        audio_button: {
+            type: cc.AudioClip,
+            default: null
+        },
+        audio_up: {
+            type: cc.AudioClip,
+            default: null
         }
     },
     
@@ -19,11 +24,28 @@ cc.Class({
 
     },
 
-    showTishi: function(str)
+    setSpriteFrame: function(url,sp)
     {
-    	var tishi = cc.instantiate(this.tishi);
-    	tishi.getComponent("tishi").updateUI(str);
-    	this.node.addChild(tishi,10000);
+        cc.loader.loadRes(url, cc.SpriteFrame, function (err, spriteFrame) {
+            if(!err && sp)
+            {
+                sp.getComponent("cc.Sprite").spriteFrame = spriteFrame;
+            }
+        });
+    },
+
+    showToast: function(str)
+    {
+    	var toast = cc.instantiate(this.toast);
+    	cc.find("label",toast).getComponent("cc.Label").string = str;
+    	this.node.addChild(toast,10000);
+        toast.opacity = 0;
+        toast.runAction(cc.sequence(
+            cc.fadeIn(0.2),
+            cc.delayTime(2),
+            cc.fadeOut(0.3),
+            cc.removeSelf()
+        ));
     },
 
     showCoin: function(coin,pos)

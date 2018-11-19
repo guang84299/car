@@ -1,4 +1,5 @@
 var config = require("config");
+var storage = require("storage");
 
 cc.Class({
     extends: cc.Component,
@@ -6,8 +7,25 @@ cc.Class({
     properties: {
         speed: 400,//速度
         rotateSpeed: 120, // 旋转速度
+        lv: 1,
 
         pstreak: {
+            default: null,
+            type: cc.Prefab
+        },
+        pbaozha: {
+            default: null,
+            type: cc.Prefab
+        },
+        pdeng1: {
+            default: null,
+            type: cc.Prefab
+        },
+        pdeng2: {
+            default: null,
+            type: cc.Prefab
+        },
+        paim: {
             default: null,
             type: cc.Prefab
         }
@@ -18,6 +36,7 @@ cc.Class({
         this.game = cc.find("Canvas").getComponent("game");
         this.body = this.node.getComponent("cc.RigidBody");
         this.shadow = cc.find("shadow",this.node);
+
         this.node.sc = this;
 
         this.speed = config.myCarSpeed;
@@ -26,41 +45,125 @@ cc.Class({
         this.state = "born";
         this.dirAng = 0;
         this.streakDt = 0;
-        this.lv = 1;
+        this.isMyCar = false;
 
-        this.initLv(this.node.carLv);
+        this.speedVar = Math.random()*4+1;
+        this.speedVarDt = 0;
+
+        this.collTime = 0;
+
+        this.initLv();
         this.initSpeed();
+
+        if(this.game.myCar.sc.state == "hit")
+            this.showAim();
+
+        this.initDeng();
     },
 
     initSpeed: function()
     {
-        this.body.linearVelocity = cc.v2(0,this.speed);
+        this.node.rotation = this.node.carAng;
+        this.body.linearVelocity = this.node.carDir.mulSelf(-this.speed);
         this.updateShadow();
     },
 
-    initLv: function(lv)
+    initLv: function()
     {
-        this.lv = lv;
-        this.speed = config.myCarSpeed*config.carLv[lv-1].speed;
-        this.rotateSpeed = config.myCarRotateSpeed*config.carLv[lv-1].rotateSpeed;
-
-        cc.log(lv);
+        this.speed = config.myCarSpeed*config.carLv[this.lv-1].speed;
+        var s = (Math.random() - 0.5) * 2 *(this.speed*0.2);
+        this.speed += s;
+        this.rotateSpeed = config.myCarRotateSpeed*config.carLv[this.lv-1].rotateSpeed;
     },
 
-    die: function()
+    initDeng: function()
+    {
+        this.deng1 = cc.instantiate(this.pdeng1);
+        this.node.addChild(this.deng1);
+
+        //this.deng2 = cc.instantiate(this.pdeng2);
+        //this.node.addChild(this.deng2);
+        //
+        //var ac1 = cc.repeatForever(cc.sequence(
+        //    cc.fadeTo(0.5,160).easing(cc.easeSineOut()),
+        //    cc.fadeTo(0.5,60).easing(cc.easeSineOut()),
+        //    cc.delayTime(0.3)
+        //));
+        //
+        //var ac2 = cc.repeatForever(cc.sequence(
+        //    cc.fadeTo(0.5,60).easing(cc.easeSineOut()),
+        //    cc.fadeTo(0.5,160).easing(cc.easeSineOut()),
+        //    cc.delayTime(0.4)
+        //));
+        //
+        //this.deng1.runAction(ac1);
+        //this.deng2.runAction(ac2);
+    },
+
+    changeSpeed: function()
+    {
+        this.speed = config.myCarSpeed*config.carLv[this.lv-1].speed;
+        var s = (Math.random() - 0.5) * 2 *(this.speed*0.2);
+        this.speed += s;
+        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+    },
+
+    subSpeed: function()
+    {
+        this.speed = 0;
+        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+
+        var self = this;
+        this.node.stopActionByTag(2);
+        var ac = cc.sequence(
+            cc.delayTime(0.5),
+            cc.callFunc(function(){
+                self.changeSpeed();
+            })
+        );
+        ac.setTag(2);
+        this.node.runAction(ac);
+    },
+
+    die: function(isCollMyCar)
     {
         if(this.state != "die")
         {
             this.state = "die";
+            this.node.isCollMyCar = isCollMyCar;
             this.game.carDie(this.node);
 
             this.node.runAction(cc.sequence(
                 cc.delayTime(0.1),
                 cc.removeSelf()
             ));
+
+            var baozha = cc.instantiate(this.pbaozha);
+            baozha.position = this.node.position;
+            this.node.parent.addChild(baozha,10);
         }
     },
 
+    showAim: function()
+    {
+        if(this.aim)
+        {
+            this.aim.active = true;
+        }
+        else
+        {
+            this.aim = cc.instantiate(this.paim);
+            this.node.addChild(this.aim,10);
+        }
+    },
+
+    hideAim: function()
+    {
+        if(this.aim)
+        {
+            this.aim.active = false;
+        }
+    },
 
     addStreak: function()
     {
@@ -103,8 +206,8 @@ cc.Class({
         this.addStreak();
 
         var v = cc.v2(-cc.winSize.width/2,-cc.winSize.height/2);
-        var left = cc.v2(-this.node.width/2+10,-140);
-        var right = cc.v2(this.node.width/2-10,-140);
+        var left = cc.v2(-this.node.width/2+10,-this.node.height*0.7);
+        var right = cc.v2(this.node.width/2-10,-this.node.height*0.7);
 
         if(this.streak1)
         {
@@ -179,7 +282,7 @@ cc.Class({
         var rad = this.getCurrVec(tar).signAngle(cc.v2(1,0));
         var v = cc.v2(Math.cos(rad),Math.sin(rad)).normalizeSelf();
 
-        this.shadow.position = v.mulSelf(40);
+        this.shadow.position = v.mulSelf(12);
     },
 
     updateDir: function(dt)
@@ -208,11 +311,11 @@ cc.Class({
                 df = -df;
             this.dirAng += this.rotateSpeed * dt * df;
 
-            if(this.node.rotation - this.dirAng < -90)
-                this.dirAng = this.node.rotation + 90;
+            if(this.node.rotation - this.dirAng < -60)
+                this.dirAng = this.node.rotation + 60;
 
-            if(this.node.rotation - this.dirAng > 90)
-                this.dirAng = this.node.rotation - 90;
+            if(this.node.rotation - this.dirAng > 60)
+                this.dirAng = this.node.rotation - 60;
 
             this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
@@ -231,12 +334,24 @@ cc.Class({
         }
     },
 
+    updateSpeed: function(dt)
+    {
+        this.speedVarDt += dt;
+        if(this.speedVarDt >= this.speedVar)
+        {
+            this.speedVarDt = 0;
+            this.speedVar = Math.random()*4+1;
+            this.changeSpeed();
+        }
+    },
+
 
     update: function(dt)
     {
         if(this.state != "die")
         {
             this.updateDir(dt);
+            this.updateSpeed(dt);
         }
     },
 
@@ -244,6 +359,15 @@ cc.Class({
     onBeginContact: function (contact, selfCollider, otherCollider) {
         //this.showContact(contact.getWorldManifold().points);
         //cc.log(otherCollider);
+        //if(otherCollider.node.sc.isMyCar)
+        //this.subSpeed();
+        var t = new Date().getTime();
+        if(t-this.collTime>1000)
+        {
+            this.collTime = t;
+            storage.playSound(this.game.audio_coll);
+        }
+
     },
 
     // 只在两个碰撞体结束接触时被调用一次
@@ -258,18 +382,34 @@ cc.Class({
 
     // 每次处理完碰撞体接触逻辑时被调用
     onPostSolve: function (contact, selfCollider, otherCollider) {
-        if(this.state != "die" && otherCollider.node.sc.state != "die")
+        if(this.state != "die")
         {
-            if(contact.getImpulse().normalImpulses>50)
+            if(contact.getImpulse().normalImpulses[0]>3)
             {
-                //cc.log(contact.getImpulse().normalImpulses,contact.getImpulse().tangentImpulses);
-                this.die();
+                if(otherCollider.node.sc.isMyCar)
+                {
+                    //otherCollider.node.sc.isBaoHu || && otherCollider.node.sc.hp >= 1
+                    if(otherCollider.node.sc.state == "hit" || otherCollider.node.sc.state == "hot" )
+                        this.die(true);
+                }
+                else
+                {
+                    this.die(false);
+                }
             }
-            else if(contact.getImpulse().tangentImpulses>10)
-            {
-                cc.log(contact.getImpulse().tangentImpulses);
-                this.die();
-            }
+            //else if(contact.getImpulse().tangentImpulses[]>1)
+            //{
+            //    cc.log(contact.getImpulse().tangentImpulses);
+            //    if(otherCollider.node.sc.isMyCar)
+            //    {
+            //        if(otherCollider.node.sc.isBaoHu || otherCollider.node.sc.state == "hit" || otherCollider.node.sc.state == "hot")
+            //            this.die();
+            //    }
+            //    else
+            //    {
+            //        this.die();
+            //    }
+            //}
         }
 
     }

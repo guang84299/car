@@ -19,17 +19,17 @@
   "design-resolution-height": 640,
   "design-resolution-width": 960,
   "excluded-modules": [
-    "LabelOutline",
     "TiledMap",
-    "Spine Skeleton",
     "DragonBones",
     "RichText",
+    "PageView",
+    "PageViewIndicator",
+    "Slider",
     "EditBox",
     "VideoPlayer",
     "WebView",
     "Animation",
-    "StudioComponent",
-    "Native NetWork"
+    "StudioComponent"
   ],
   "fit-height": true,
   "fit-width": false,
@@ -43,5 +43,6 @@
     "width": 960
   },
   "use-customize-simulator": false,
-  "use-project-simulator-setting": false
+  "use-project-simulator-setting": false,
+  "start-scene": "current"
 }
