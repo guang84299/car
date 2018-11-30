@@ -10,7 +10,7 @@ cc.Class({
 
     onLoad: function()
     {
-        this.game = cc.find("Canvas").getComponent("game");
+        this.game = cc.find("Canvas/node_gamecan").getComponent("game");
         this.res = cc.find("Canvas").getComponent("res");
         this.node.sc = this;
         this.initUI();
@@ -28,17 +28,34 @@ cc.Class({
         this.chaoyuebg_icon = cc.find("icon",this.chaoyuebg);
         this.chaoyuebg_name = cc.find("name",this.chaoyuebg).getComponent("cc.Label");
         this.chaoyuebg_score = cc.find("score",this.chaoyuebg).getComponent("cc.Label");
+        this.chaoyuebg_no = cc.find("no",this.chaoyuebg);
 
         this.fuhuobg_vedio = cc.find("vedio",this.fuhuobg);
         this.fuhuobg_share = cc.find("share",this.fuhuobg);
         this.fuhuobg_time = cc.find("time",this.fuhuobg).getComponent("cc.Label");
-        this.fuhuobg_desc = cc.find("desc",this.fuhuobg).getComponent("cc.Label");
 
 
         this.point.string = cc.i18n.t('fuhuo_label_text.point')+storage.castPoint(this.game.point);
         this.chaoyuebg_score.string = cc.i18n.t('fuhuo_label_text.chaoyue_score')+"  0";
-        this.fuhuobg_desc.string = cc.i18n.t('fuhuo_label_text.fuhuo_desc');
         //this.bclose_str.string = cc.i18n.t('fuhuo_label_text.close');
+
+        var self = this;
+        sdk.getChaoyueRank(function(data){
+            if(data)
+            {
+                if(data.url && data.url.length>10)
+                    self.res.loadPic(data.url,self.chaoyuebg_icon);
+                self.chaoyuebg_name.string = storage.getLabelStr(data.nick,15);
+                self.chaoyuebg_score.string = cc.i18n.t('fuhuo_label_text.chaoyue_score')+ " "+data.score;
+            }
+            else
+            {
+                self.chaoyuebg_icon.active = false;
+                self.chaoyuebg_name.node.active = false;
+                self.chaoyuebg_score.node.active = false;
+                self.chaoyuebg_no.active = true;
+            }
+        },this.game.point);
     },
 
     updateUI: function()
@@ -114,7 +131,7 @@ cc.Class({
                     self.hide();
                 }
                 self.candt = true;
-            });
+            },"fuhuo");
         }
         storage.playSound(this.res.audio_button);
         cc.log(data);

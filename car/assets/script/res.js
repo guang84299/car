@@ -34,6 +34,24 @@ cc.Class({
         });
     },
 
+    loadPic: function(url,sp)
+    {
+        cc.loader.load({url: url, type: 'png'}, function (err, tex) {
+            if(err)
+            {
+                cc.log(err);
+            }
+            else
+            {
+                if(cc.isValid(sp))
+                {
+                    var spriteFrame = new cc.SpriteFrame(tex);
+                    sp.getComponent("cc.Sprite").spriteFrame = spriteFrame;
+                }
+            }
+        });
+    },
+
     showToast: function(str)
     {
     	var toast = cc.instantiate(this.toast);

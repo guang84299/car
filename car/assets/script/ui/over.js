@@ -23,7 +23,10 @@ cc.Class({
 
     initUI: function()
     {
+        this.node_gamecan = cc.find("Canvas/node_gamecan");
         this.node_center = cc.find("center",this.node);
+        this.map_1 = cc.find("bg/map1",this.node);
+        this.map_2 = cc.find("bg/map2",this.node);
 
         this.max_point = cc.find("max_point",this.node).getComponent("cc.Label");
         this.curr_point = cc.find("curr_point",this.node).getComponent("cc.Label");
@@ -34,21 +37,25 @@ cc.Class({
         this.node_speed_lv = cc.find("speed/lv",this.node_center).getComponent("cc.Label");
         this.node_speed_num = cc.find("speed/num",this.node_center).getComponent("cc.Label");
         this.node_speed_up = cc.find("speed/up",this.node_center).getComponent("cc.Button");
+        this.node_speed_up_up = cc.find("speed/up/up",this.node_center);
 
         this.node_hit = cc.find("hit",this.node_center).getComponent("cc.Button");
         this.node_hit_lv = cc.find("hit/lv",this.node_center).getComponent("cc.Label");
         this.node_hit_num = cc.find("hit/num",this.node_center).getComponent("cc.Label");
         this.node_hit_up = cc.find("hit/up",this.node_center).getComponent("cc.Button");
+        this.node_hit_up_up = cc.find("hit/up/up",this.node_center);
 
         this.node_hot = cc.find("hot",this.node_center).getComponent("cc.Button");
         this.node_hot_lv = cc.find("hot/lv",this.node_center).getComponent("cc.Label");
         this.node_hot_num = cc.find("hot/num",this.node_center).getComponent("cc.Label");
         this.node_hot_up = cc.find("hot/up",this.node_center).getComponent("cc.Button");
+        this.node_hot_up_up = cc.find("hot/up/up",this.node_center);
 
         this.node_hp = cc.find("hp",this.node_center).getComponent("cc.Button");
         this.node_hp_lv = cc.find("hp/lv",this.node_center).getComponent("cc.Label");
         this.node_hp_num = cc.find("hp/num",this.node_center).getComponent("cc.Label");
         this.node_hp_up = cc.find("hp/up",this.node_center).getComponent("cc.Button");
+        this.node_hp_up_up = cc.find("hp/up/up",this.node_center);
 
         this.shouyi = cc.find("shouyi",this.node);
         this.shouyi_sp = cc.find("shouyi/sp",this.node);
@@ -59,7 +66,11 @@ cc.Class({
         this.max_point.string = cc.i18n.t('over_label_text.max_point') + storage.castPoint(storage.getMaxPoint());
         this.curr_point.string = cc.i18n.t('over_label_text.curr_point') + storage.castPoint(cc.mydata.point);
 
+        this.map_1.runAction(cc.repeatForever(cc.moveBy(13,0,-1000)));
+        this.map_2.runAction(cc.repeatForever(cc.moveBy(13,0,-1000)));
+
         this.updateShouYi();
+        this.main.uploadData();
     },
 
     updateUI: function()
@@ -79,12 +90,17 @@ cc.Class({
             this.node_speed_num.string = storage.castPoint(cost);
             this.node_speed.interactable = (point>=cost);
             this.node_speed_up.interactable = this.node_speed.interactable;
+
+            this.node_speed_up_up.x = -40;
+            this.res.setSpriteFrame("images/levelup/up",this.node_speed_up_up);
         }
         else
         {
-            this.node_speed_num.string = "满级";
+            this.node_speed_num.string = "";
             this.node_speed.interactable = false;
             this.node_speed_up.interactable = false;
+            this.node_speed_up_up.x = 0;
+            this.res.setSpriteFrame("images/levelup/max",this.node_speed_up_up);
         }
 
         if(storage.getHitLv()<config.myCarHit.length-1)
@@ -93,12 +109,17 @@ cc.Class({
             this.node_hit_num.string = storage.castPoint(cost);
             this.node_hit.interactable = (point>=cost);
             this.node_hit_up.interactable = this.node_hit.interactable;
+
+            this.node_hit_up_up.x = -40;
+            this.res.setSpriteFrame("images/levelup/up",this.node_hit_up_up);
         }
         else
         {
-            this.node_hit_num.string = "满级";
+            this.node_hit_num.string = "";
             this.node_hit.interactable = false;
             this.node_hit_up.interactable = false;
+            this.node_hit_up_up.x = 0;
+            this.res.setSpriteFrame("images/levelup/max",this.node_hit_up_up);
         }
 
         if(storage.getHotLv()<config.myCarHot.length-1)
@@ -107,12 +128,17 @@ cc.Class({
             this.node_hot_num.string = storage.castPoint(cost);
             this.node_hot.interactable = (point>=cost);
             this.node_hot_up.interactable = this.node_hot.interactable;
+
+            this.node_hot_up_up.x = -40;
+            this.res.setSpriteFrame("images/levelup/up",this.node_hot_up_up);
         }
         else
         {
-            this.node_hot_num.string = "满级";
+            this.node_hot_num.string = "";
             this.node_hot.interactable = false;
             this.node_hot_up.interactable = false;
+            this.node_hot_up_up.x = 0;
+            this.res.setSpriteFrame("images/levelup/max",this.node_hot_up_up);
         }
 
         if(storage.getHpLv()<config.myCarHp.length-1)
@@ -121,12 +147,17 @@ cc.Class({
             this.node_hp_num.string = storage.castPoint(cost);
             this.node_hp.interactable = (point>=cost);
             this.node_hp_up.interactable = this.node_hp.interactable;
+
+            this.node_hp_up_up.x = -40;
+            this.res.setSpriteFrame("images/levelup/up",this.node_hp_up_up);
         }
         else
         {
-            this.node_hp_num.string = "满级";
+            this.node_hp_num.string = "";
             this.node_hp.interactable = false;
             this.node_hp_up.interactable = false;
+            this.node_hp_up_up.x = 0;
+            this.res.setSpriteFrame("images/levelup/max",this.node_hp_up_up);
         }
 
         var randLv = storage.getRandLv();
@@ -136,35 +167,32 @@ cc.Class({
             this.node_speed_num.string = "";
             this.node_speed.interactable = true;
             this.node_speed_up.interactable = true;
-            this.res.setSpriteFrame("images/levelup/vedio_up",this.node_speed_up.node);
+            this.res.setSpriteFrame("images/levelup/vedio_up",this.node_speed_up_up);
+            this.node_speed_up_up.x = 0;
         }
         else if(randLv == 2)
         {
             this.node_hit_num.string = "";
             this.node_hit.interactable = true;
             this.node_hit_up.interactable = true;
-            this.res.setSpriteFrame("images/levelup/vedio_up",this.node_hit_up.node);
+            this.res.setSpriteFrame("images/levelup/vedio_up",this.node_hit_up_up);
+            this.node_hit_up_up.x = 0;
         }
         else if(randLv == 3)
         {
             this.node_hot_num.string = "";
             this.node_hot.interactable = true;
             this.node_hot_up.interactable = true;
-            this.res.setSpriteFrame("images/levelup/vedio_up",this.node_hot_up.node);
+            this.res.setSpriteFrame("images/levelup/vedio_up",this.node_hot_up_up);
+            this.node_hot_up_up.x = 0;
         }
         else if(randLv == 4)
         {
             this.node_hp_num.string = "";
             this.node_hp.interactable = true;
             this.node_hp_up.interactable = true;
-            this.res.setSpriteFrame("images/levelup/vedio_up",this.node_hp_up.node);
-        }
-        else
-        {
-            this.res.setSpriteFrame("images/levelup/btn_up",this.node_speed_up.node);
-            this.res.setSpriteFrame("images/levelup/btn_up",this.node_hit_up.node);
-            this.res.setSpriteFrame("images/levelup/btn_up",this.node_hot_up.node);
-            this.res.setSpriteFrame("images/levelup/btn_up",this.node_hp_up.node);
+            this.res.setSpriteFrame("images/levelup/vedio_up",this.node_hp_up_up);
+            this.node_hp_up_up.x = 0;
         }
     },
 
@@ -192,7 +220,10 @@ cc.Class({
     {
         if(data == "again")
         {
-            cc.director.loadScene("game");
+            var game = this.node_gamecan.getComponent("game");
+            game.resetData();
+            this.node.destroy();
+            //cc.director.loadScene("game");
         }
         else if(data == "speedup")
         {
@@ -226,6 +257,10 @@ cc.Class({
         {
             this.openRank();
         }
+        else if(data == "share")
+        {
+            sdk.share(null,"over");
+        }
         storage.playSound(this.res.audio_button);
         cc.log(data);
     },
@@ -242,6 +277,7 @@ cc.Class({
                     storage.setRandLv(0);
                     storage.setSpeedLv(storage.getSpeedLv()+1);
                     self.updateUI();
+                    self.main.uploadData();
                     storage.playSound(self.res.audio_up);
                 }
                 else
@@ -256,6 +292,7 @@ cc.Class({
             storage.setPoint(storage.getPoint()-cost);
             storage.setSpeedLv(storage.getSpeedLv()+1);
             this.updateUI();
+            this.main.uploadData();
             storage.playSound(this.res.audio_up);
         }
     },
@@ -272,6 +309,7 @@ cc.Class({
                     storage.setRandLv(0);
                     storage.setHitLv(storage.getHitLv()+1);
                     self.updateUI();
+                    self.main.uploadData();
                     storage.playSound(self.res.audio_up);
                 }
                 else
@@ -286,6 +324,7 @@ cc.Class({
             storage.setPoint(storage.getPoint()-cost);
             storage.setHitLv(storage.getHitLv()+1);
             this.updateUI();
+            this.main.uploadData();
             storage.playSound(this.res.audio_up);
         }
     },
@@ -302,6 +341,7 @@ cc.Class({
                     storage.setRandLv(0);
                     storage.setHotLv(storage.getHotLv()+1);
                     self.updateUI();
+                    self.main.uploadData();
                     storage.playSound(self.res.audio_up);
                 }
                 else
@@ -316,6 +356,7 @@ cc.Class({
             storage.setPoint(storage.getPoint()-cost);
             storage.setHotLv(storage.getHotLv()+1);
             this.updateUI();
+            this.main.uploadData();
             storage.playSound(this.res.audio_up);
         }
     },
@@ -332,6 +373,7 @@ cc.Class({
                     storage.setRandLv(0);
                     storage.setHpLv(storage.getHpLv()+1);
                     self.updateUI();
+                    self.main.uploadData();
                     storage.playSound(self.res.audio_up);
                 }
                 else
@@ -346,6 +388,7 @@ cc.Class({
             storage.setPoint(storage.getPoint()-cost);
             storage.setHpLv(storage.getHpLv()+1);
             this.updateUI();
+            this.main.uploadData();
             storage.playSound(this.res.audio_up);
         }
     },
@@ -416,5 +459,16 @@ cc.Class({
 
     update: function(dt) {
         this.updateShouYiTime(dt);
+
+
+        if(this.map_1.y < -2000)
+        {
+            this.map_1.y = 2000;
+        }
+
+        if(this.map_2.y < -2000)
+        {
+            this.map_2.y = 2000;
+        }
     }
 });

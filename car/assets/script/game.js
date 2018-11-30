@@ -25,6 +25,10 @@ cc.Class({
             default: null,
             type: cc.Node
         },
+        pstreak: {
+            default: null,
+            type: cc.Prefab
+        },
         pYuGao: {
             default: null,
             type: cc.Prefab
@@ -41,7 +45,19 @@ cc.Class({
             default: null,
             type: cc.Prefab
         },
+        pmyemoji: {
+            default: null,
+            type: cc.Prefab
+        },
         map_1: {
+            default: null,
+            type: cc.Prefab
+        },
+        pbaozha: {
+            default: null,
+            type: cc.Prefab
+        },
+        psmoke: {
             default: null,
             type: cc.Prefab
         },
@@ -84,19 +100,25 @@ cc.Class({
 
     initPhysics: function()
     {
-        cc.director.getPhysicsManager().enabled = true;
+        cc.director.getPhysicsManager().enabled = false;
         //cc.director.getPhysicsManager().debugDrawFlags = cc.PhysicsManager.DrawBits.e_aabbBit |
         //cc.PhysicsManager.DrawBits.e_pairBit |
         //cc.PhysicsManager.DrawBits.e_centerOfMassBit |
         //cc.PhysicsManager.DrawBits.e_jointBit |
         //cc.PhysicsManager.DrawBits.e_shapeBit;
-        cc.director.getPhysicsManager().gravity = cc.v2(0,0);
         cc.director.getPhysicsManager().debugDrawFlags = 0;
+        //cc.PhysicsManager.FIXED_TIME_STEP = 1/20;
+        cc.PhysicsManager.VELOCITY_ITERATIONS = 6;
+        cc.PhysicsManager.POSITION_ITERATIONS = 6;
+        //cc.PhysicsManager.MAX_ACCUMULATOR = cc.PhysicsManager.FIXED_TIME_STEP*2;
+        //cc.director.getPhysicsManager().enabledAccumulator = false;
+        cc.director.getPhysicsManager().gravity = cc.v2(0,0);
+
 
 
         //cc.director.getPhysicsManager().attachDebugDrawToCamera(this.gameCamera);
         var manager = cc.director.getCollisionManager();
-        manager.enabled = true;
+        manager.enabled = false;
         //manager.enabledDebugDraw = true;
         //manager.enabledDrawBoundingBox = true;
     },
@@ -104,11 +126,250 @@ cc.Class({
     initData: function()
     {
         this.state = "stop";
+
+        this.enemyPools = [];
+        for(var n =0;n<this.pCars.length;n++)
+        {
+            var enemyPool = new cc.NodePool();
+            for (var i = 0; i < 12; i++) {
+                var enemy = cc.instantiate(this.pCars[n]); // 创建节点
+                enemyPool.put(enemy); // 通过 putInPool 接口放入对象池
+            }
+            this.enemyPools.push(enemyPool);
+        }
+
+        this.yugaoPool = new cc.NodePool();
+        for (var i = 0; i < 12; i++) {
+            var e = cc.instantiate(this.pYuGao); // 创建节点
+            this.yugaoPool.put(e); // 通过 putInPool 接口放入对象池
+        }
+
+        this.propyugaoPools = [];
+        for(var n =0;n<this.pPropYuGao.length;n++)
+        {
+            var yugaoPool = new cc.NodePool();
+            for (var i = 0; i < 12; i++) {
+                var e = cc.instantiate(this.pPropYuGao[n]); // 创建节点
+                yugaoPool.put(e); // 通过 putInPool 接口放入对象池
+            }
+            this.propyugaoPools.push(yugaoPool);
+        }
+
+        this.propPool = new cc.NodePool();
+        for (var i = 0; i < 6; i++) {
+            var e = cc.instantiate(this.pProp); // 创建节点
+            this.propPool.put(e); // 通过 putInPool 接口放入对象池
+        }
+
+        this.pemojibgPool = new cc.NodePool();
+        for (var i = 0; i < 8; i++) {
+            var e = cc.instantiate(this.pemojibg); // 创建节点
+            this.pemojibgPool.put(e); // 通过 putInPool 接口放入对象池
+        }
+
+        this.myemojiPool = new cc.NodePool();
+        for (var i = 0; i < 2; i++) {
+            var e = cc.instantiate(this.pmyemoji); // 创建节点
+            this.myemojiPool.put(e); // 通过 putInPool 接口放入对象池
+        }
+
+        this.map_1Pool = new cc.NodePool();
+        for (var i = 0; i < 8; i++) {
+            var e = cc.instantiate(this.map_1); // 创建节点
+            this.map_1Pool.put(e); // 通过 putInPool 接口放入对象池
+        }
+
+        this.baozhaPool = new cc.NodePool();
+        for (var i = 0; i < 8; i++) {
+            var e = cc.instantiate(this.pbaozha); // 创建节点
+            this.baozhaPool.put(e); // 通过 putInPool 接口放入对象池
+        }
+
+        this.smokePool = new cc.NodePool();
+        for (var i = 0; i < 8; i++) {
+            var e = cc.instantiate(this.psmoke); // 创建节点
+            this.smokePool.put(e); // 通过 putInPool 接口放入对象池
+        }
+
+        this.streakPool = new cc.NodePool();
+        for (var i = 0; i < 10; i++) {
+            var e = cc.instantiate(this.pstreak); // 创建节点
+            this.streakPool.put(e); // 通过 putInPool 接口放入对象池
+        }
+    },
+
+    createEnemy: function(lv)
+    {
+        var enemy = null;
+        if (this.enemyPools[lv].size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            enemy = this.enemyPools[lv].get();
+            enemy.getComponent('car').resetData();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            enemy = cc.instantiate(this.pCars[lv]);
+        }
+        return enemy;
+    },
+
+    destoryEnemy: function(enemy)
+    {
+        this.enemyPools[enemy.sc.lv-1].put(enemy);
+    },
+
+    createYugao: function()
+    {
+        var yugao = null;
+        if (this.yugaoPool.size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            yugao = this.yugaoPool.get();
+            //yugao.getComponent('car').resetData();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            yugao = cc.instantiate(this.pYuGao);
+        }
+        return yugao;
+    },
+
+    destoryYugao: function(yugao)
+    {
+        this.yugaoPool.put(yugao);
+    },
+
+    createPropyugao: function(lv)
+    {
+        var yugao = null;
+        if (this.propyugaoPools[lv].size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            yugao = this.propyugaoPools[lv].get();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            yugao = cc.instantiate(this.pPropYuGao[lv]);
+        }
+        return yugao;
+    },
+
+    destoryPropyugao: function(yugao)
+    {
+        this.propyugaoPools[yugao.lv].put(yugao);
+    },
+
+    createProp: function(proptype)
+    {
+        var prop = null;
+        if (this.propPool.size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            prop = this.propPool.get();
+            prop.getComponent('prop').resetDate(proptype);
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            prop = cc.instantiate(this.pProp);
+        }
+        return prop;
+    },
+
+    destoryProp: function(prop)
+    {
+        this.propPool.put(prop);
+    },
+
+    createEmojibg: function()
+    {
+        var emojibg = null;
+        if (this.pemojibgPool.size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            emojibg = this.pemojibgPool.get();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            emojibg = cc.instantiate(this.pemojibg);
+        }
+        return emojibg;
+    },
+
+    destoryEmojibg: function(emojibg)
+    {
+        this.pemojibgPool.put(emojibg);
+    },
+
+    createMyEmoji: function()
+    {
+        var emojibg = null;
+        if (this.myemojiPool.size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            emojibg = this.myemojiPool.get();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            emojibg = cc.instantiate(this.pmyemoji);
+        }
+        return emojibg;
+    },
+
+    destoryMyEmoji: function(emojibg)
+    {
+        this.myemojiPool.put(emojibg);
+    },
+
+    createMap: function()
+    {
+        var map = null;
+        if (this.map_1Pool.size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            map = this.map_1Pool.get();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            map = cc.instantiate(this.map_1);
+        }
+        return map;
+    },
+
+    destoryMap: function(map)
+    {
+        this.map_1Pool.put(map);
+    },
+
+    createBaozha: function()
+    {
+        var baozha = null;
+        if (this.baozhaPool.size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            baozha = this.baozhaPool.get();
+            baozha.getComponent('cc.ParticleSystem').resetSystem();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            baozha = cc.instantiate(this.pbaozha);
+        }
+        return baozha;
+    },
+
+    destoryBaozha: function(baozha)
+    {
+        this.baozhaPool.put(baozha);
+    },
+
+    createSmoke: function()
+    {
+        var smoke = null;
+        if (this.smokePool.size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            smoke = this.smokePool.get();
+            smoke.getComponent('cc.ParticleSystem').resetSystem();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            smoke = cc.instantiate(this.psmoke);
+        }
+        return smoke;
+    },
+
+    destorySmoke: function(smoke)
+    {
+        this.smokePool.put(smoke);
+    },
+
+    createStreak: function()
+    {
+        var streak = null;
+        if (this.streakPool.size() > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+            streak = this.streakPool.get();
+            streak.getComponent("cc.MotionStreak").reset();
+        } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+            streak = cc.instantiate(this.pstreak);
+        }
+        return streak;
+    },
+
+    destoryStreak: function(streak)
+    {
+        this.streakPool.put(streak);
     },
 
     initUI: function()
     {
-        this.node_game = cc.find("Canvas/node_game");
+        this.main = cc.find("Canvas").getComponent("main");
+        this.res = cc.find("Canvas").getComponent("res");
+        this.node_game = cc.find("Canvas/node_gamecan/node_game");
+        this.layer_game = cc.find("layer_game",this.node_game);
         this.game_bg = cc.find("bg",this.node_game);
         this.game_uibg = cc.find("uibg",this.node_game);
         this.speed_mask = cc.find("speed_mask",this.game_uibg);
@@ -121,7 +382,7 @@ cc.Class({
 
 
 
-        this.node_ui = cc.find("Canvas/node_ui");
+        this.node_ui = cc.find("Canvas/node_gamecan/node_ui");
         this.node_ui_point = cc.find("point",this.node_ui);
         this.node_ui_point_str = this.node_ui_point.getComponent("cc.Label");
 
@@ -140,14 +401,20 @@ cc.Class({
         this.node_ui_node_hot_pro_huo = cc.find("pro/huo",this.node_ui_node_hot);
 
         this.bgColors = [
-            cc.color(198,198,149),
-            cc.color(160,149,198),
-            cc.color(156,198,149),
-            cc.color(198,149,149),
-            cc.color(180,149,198),
-            cc.color(149,182,198)
+            cc.color(91,105,123),
+            cc.color(112,91,123),
+            cc.color(123,91,91),
+            cc.color(123,115,91),
+            cc.color(104,123,91),
+            cc.color(91,123,120)
         ];
 
+        //this.startGame();
+    },
+
+    resetData: function()
+    {
+        this.layer_game.destroyAllChildren();
         this.startGame();
     },
 
@@ -159,7 +426,7 @@ cc.Class({
     initCar: function()
     {
         this.myCar = cc.instantiate(this.pmyCar);
-        this.node_game.addChild(this.myCar,10);
+        this.layer_game.addChild(this.myCar,10);
     },
 
 
@@ -172,6 +439,7 @@ cc.Class({
         this.currLevel = 0;
         this.levelDt = 0;
         this.point = 0;
+        this.killCarNum = 0;
 
         this.cars = [];
         this.props = [];
@@ -181,7 +449,20 @@ cc.Class({
         this.propTime = Math.random()*5+3;
         this.propDt = 0;
 
+        this.gameDt = 0;
+        this.shouyix2 = storage.getShouYiX2();
+        this.shouyix2Time = 0;
+        if(this.shouyix2)
+        {
+            var t = new Date().getTime();
+            var t2 = storage.getShouYiTime() + 2*60*60*1000;
+            this.shouyix2Time = (t2 - t)/1000;
+        }
+
+
         storage.playMusic(this.audio_music);
+
+        sdk.hideBanner();
     },
 
     willGameOver: function()
@@ -190,6 +471,7 @@ cc.Class({
         var node_fuhuo = cc.instantiate(this.node_fuhuo);
         this.node.addChild(node_fuhuo);
         node_fuhuo.sc.show();
+        this.finishSpeedUp();
     },
 
     fuhuo: function()
@@ -206,20 +488,25 @@ cc.Class({
         cc.mydata.over = true;
         cc.mydata.point = this.point;
         storage.setGameNum(storage.getGameNum()+1);
+        storage.setKillCarNum(storage.getKillCarNum()+this.killCarNum);
 
         if(this.point > storage.getMaxPoint())
             storage.setMaxPoint(this.point);
 
-        cc.director.loadScene("main");
+        this.main.openOver();
     },
 
     updatePoint: function(dt)
     {
         this.updatePointDt += dt;
-        if(this.updatePointDt >= 0.5)
+        if(this.updatePointDt >= 1)
         {
-            if(storage.getShouYiX2())
+            if(this.shouyix2)
+            {
+                this.shouyix2Time -= this.updatePointDt;
+                this.shouyix2 = this.shouyix2Time > 0;
                 this.point +=  this.updatePointDt*4;
+            }
             else
                 this.point +=  this.updatePointDt*2;
             this.updatePointDt = 0;
@@ -290,7 +577,7 @@ cc.Class({
     startSpeedUp: function()
     {
         this.speed_mask.active = true;
-        this.par_speedup.active = true;
+        //this.par_speedup.active = true;
     },
 
     finishSpeedUp: function()
@@ -413,7 +700,9 @@ cc.Class({
 
     addPoint: function(point)
     {
-        if(storage.getShouYiX2())
+        if(true)
+        return;
+        if(this.shouyix2)
             point *= 2;
         this.point += point;
         this.node_ui_point.stopAllActions();
@@ -448,7 +737,9 @@ cc.Class({
                 cc.spawn(
                     cc.scaleTo(0.5,0.5).easing(cc.easeSineOut()),
                     cc.fadeOut(0.5)
-                )
+                ),
+                cc.delayTime(0.2),
+                cc.removeSelf()
             )
         ));
 
@@ -463,7 +754,7 @@ cc.Class({
         if(level>=config.carLevel.length) level = config.carLevel.length-1;
         this.currLevel = level;
 
-        if(this.cars.length < config.carLevel[level].num && this.levelDt>1)//config.carLevel[level].num
+        if(this.cars.length < 8 && this.levelDt>1)//config.carLevel[level].num
         {
             this.levelDt = 0;
 
@@ -478,7 +769,7 @@ cc.Class({
             else
                 carLv = 4;
 
-            var car = cc.instantiate(this.pCars[carLv-1]);
+            var car = this.createEnemy(carLv-1);
             var pAng = 10;
             if(this.gameTime<5)
                 pAng = 90;
@@ -489,11 +780,11 @@ cc.Class({
             //car.x =  (Math.random() - 0.5) * 2 * (cc.winSize.width*2) + this.myCar.x;
             //car.y =  (Math.random() - 0.5) * 2 * (cc.winSize.height*2) + this.myCar.y;
             car.position = carDir.mulSelf(cc.winSize.height*1.2).addSelf(this.myCar.position);
-            this.node_game.addChild(car,10);
+            this.layer_game.addChild(car,10);
 
-            var yugao = cc.instantiate(this.pYuGao);
+            var yugao = this.createYugao();
             yugao.active = false;
-            this.node_game.addChild(yugao,11);
+            this.layer_game.addChild(yugao,11);
             car.yugao = yugao;
 
             this.cars.push(car);
@@ -515,7 +806,7 @@ cc.Class({
                 this.myCar.sc.addHitNum();
             this.addPoint(40 + (this.myCar.sc.hitNum-1)*20);
 
-            storage.setKillCarNum(storage.getKillCarNum()+1);
+            this.killCarNum += 1;
         }
         else if(this.myCar.sc.state == "hot")
         {
@@ -527,25 +818,26 @@ cc.Class({
                 cc.fadeOut(0.05)
             ));
 
-            storage.setKillCarNum(storage.getKillCarNum()+1);
+            this.killCarNum += 1;
         }
         else
         {
             this.addPoint(40);
         }
         this.gameCameraAnima();
-        this.createMyCarEmoji();
 
         storage.playSound(this.audio_baozha);
     },
 
     removeCars: function(car)
     {
+        this.destoryYugao(car.yugao);
+        this.destoryEnemy(car);
+        car.isCreateEmoji = false;
         for(var i =0;i<this.cars.length;i++)
         {
             if(this.cars[i] == car)
             {
-                car.yugao.destroy();
                 this.cars.splice(i,1);
                 break;
             }
@@ -621,28 +913,24 @@ cc.Class({
         {
             if(!car.isCreateEmoji && Math.random()<0.3)
             {
-                var emojibg = cc.instantiate(this.pemojibg);
-                this.node_game.addChild(emojibg,10);
+                var emojibg = this.createEmojibg();
+                this.layer_game.addChild(emojibg,10);
 
                 car.emojibg = emojibg;
                 car.emojibg.position = car.position;
 
                 var emoji = cc.find("emoji",emojibg);
-                var num = Math.floor(Math.random()*3+1);
-
-                cc.loader.loadRes("game/emoji", cc.SpriteAtlas, function (err, atlas) {
-                    var frame = atlas.getSpriteFrame('emoji'+num);
-                    emoji.getComponent("cc.Sprite").spriteFrame = frame;
-                });
-
+                var num = Math.floor(Math.random()*4+1);
+                this.res.setSpriteFrame("images/emoji/car_speed_"+num,emoji);
+                var self = this;
                 emojibg.runAction(cc.sequence(
                     cc.scaleTo(0.3,1).easing(cc.easeElasticIn()),
                     cc.delayTime(2),
                     cc.scaleTo(0.3,0).easing(cc.easeElasticOut()),
                     cc.callFunc(function(){
+                        self.destoryEmojibg(emojibg);
                         car.emojibg = null;
-                    }),
-                    cc.removeSelf()
+                    })
                 ));
 
 
@@ -651,28 +939,23 @@ cc.Class({
         car.isCreateEmoji = true;
     },
 
-    createMyCarEmoji: function()
+    createMyCarEmoji: function(type)
     {
-        if(Math.random()<0.4)
+        if(Math.random()<0.5)
         {
-            var emojibg = cc.instantiate(this.pemojibg);
-            this.node_game.addChild(emojibg,10);
+            var emoji = this.createMyEmoji();
+            this.layer_game.addChild(emoji,10);
+            emoji.position = this.myCar.position;
+            this.res.setSpriteFrame("images/emoji/"+type,emoji);
 
-            emojibg.position = this.myCar.position;
-
-            var emoji = cc.find("emoji",emojibg);
-            var num = Math.floor(Math.random()*3+1);
-
-            cc.loader.loadRes("game/emoji", cc.SpriteAtlas, function (err, atlas) {
-                var frame = atlas.getSpriteFrame('emoji'+num);
-                emoji.getComponent("cc.Sprite").spriteFrame = frame;
-            });
-
-            emojibg.runAction(cc.sequence(
+            var self = this;
+            emoji.runAction(cc.sequence(
                 cc.scaleTo(0.3,1).easing(cc.easeElasticIn()),
                 cc.delayTime(2),
                 cc.scaleTo(0.3,0).easing(cc.easeElasticOut()),
-                cc.removeSelf()
+                cc.callFunc(function(){
+                    self.destoryMyEmoji(emoji);
+                })
             ));
 
 
@@ -689,7 +972,7 @@ cc.Class({
 
             var proptype = Math.floor(Math.random()*4+1);
 
-            var prop = cc.instantiate(this.pProp);
+            var prop = this.createProp(proptype);
             prop.proptype = proptype;
             var carAng = this.myCar.sc.getCarAng(20);
             var carDir = this.myCar.sc.getCarDir(carAng);
@@ -697,11 +980,12 @@ cc.Class({
 
             //prop.x =  (Math.random() - 0.5) * 2 * (cc.winSize.width*2) + this.myCar.x;
             //prop.y =  (Math.random() - 0.5) * 2 * (cc.winSize.height*2) + this.myCar.y;
-            this.node_game.addChild(prop,10);
+            this.layer_game.addChild(prop,10);
 
-            var yugao = cc.instantiate(this.pPropYuGao[proptype-1]);
+            var yugao = this.createPropyugao(proptype-1);
+            yugao.lv = proptype-1;
             yugao.active = false;
-            this.node_game.addChild(yugao,11);
+            this.layer_game.addChild(yugao,11);
             prop.yugao = yugao;
 
             this.props.push(prop);
@@ -740,11 +1024,12 @@ cc.Class({
 
     removeProps: function(prop)
     {
+        this.destoryPropyugao(prop.yugao);
+        this.destoryProp(prop);
         for(var i =0;i<this.props.length;i++)
         {
             if(this.props[i] == prop)
             {
-                prop.yugao.destroy();
                 this.props.splice(i,1);
                 break;
             }
@@ -768,10 +1053,11 @@ cc.Class({
 
     gameCameraAnima: function()
     {
-        this.gameCamera.runAction(cc.sequence(
-            cc.moveBy(0.1,20,5).easing(cc.easeSineOut()),
-            cc.moveBy(0.1,-20,-5).easing(cc.easeSineOut())
-        ));
+        //this.gameCamera.stopAllActions();
+        //this.gameCamera.runAction(cc.sequence(
+        //    cc.moveBy(0.05,12,3).easing(cc.easeSineOut()),
+        //    cc.moveBy(0.05,-12,-3).easing(cc.easeSineOut())
+        //));
         sdk.vibrate();
     },
 
@@ -843,11 +1129,6 @@ cc.Class({
 
     updateMap: function()
     {
-        this.game_bg.position = this.myCar.position;
-        this.game_uibg.position = this.myCar.position;
-        this.game_white.position = this.myCar.position;
-        this.gameCamera.position = this.myCar.position;
-
         var fix = 2000;
 
         //找到最近的map
@@ -870,7 +1151,7 @@ cc.Class({
         }
         for(var i=0;i<desMaps.length;i++)
         {
-            desMaps[i].destroy();
+            this.destoryMap(desMaps[i]);
         }
 
         var m1 = null;
@@ -904,7 +1185,7 @@ cc.Class({
 
         if(!m1)
         {
-            var m = cc.instantiate(this.map_1);
+            var m = this.createMap();
             m.x = map.x;
             m.y = map.y + fix;
             m.scaleX = map.scaleX;
@@ -914,7 +1195,7 @@ cc.Class({
         }
         if(!m5)
         {
-            var m = cc.instantiate(this.map_1);
+            var m = this.createMap();
             m.x = map.x;
             m.y = map.y - fix;
             m.scaleY = -map.scaleY;
@@ -924,7 +1205,7 @@ cc.Class({
         }
         if(!m7)
         {
-            var m = cc.instantiate(this.map_1);
+            var m = this.createMap();
             m.x = map.x - fix;
             m.y = map.y;
             m.scaleX = -map.scaleX;
@@ -934,7 +1215,7 @@ cc.Class({
         }
         if(!m3)
         {
-            var m = cc.instantiate(this.map_1);
+            var m = this.createMap();
             m.x = map.x + fix;
             m.y = map.y;
             m.scaleX = -map.scaleX;
@@ -945,7 +1226,7 @@ cc.Class({
 
         if(!m2)
         {
-            var m = cc.instantiate(this.map_1);
+            var m = this.createMap();
             m.x = map.x + fix;
             m.y = map.y + fix;
             m.scaleX = -m1.scaleX;
@@ -956,7 +1237,7 @@ cc.Class({
 
         if(!m4)
         {
-            var m = cc.instantiate(this.map_1);
+            var m = this.createMap();
             m.x = map.x + fix;
             m.y = map.y - fix;
             m.scaleY = -m3.scaleY;
@@ -967,7 +1248,7 @@ cc.Class({
 
         if(!m6)
         {
-            var m = cc.instantiate(this.map_1);
+            var m = this.createMap();
             m.x = map.x - fix;
             m.y = map.y - fix;
             m.scaleX = -m5.scaleX;
@@ -978,7 +1259,7 @@ cc.Class({
 
         if(!m8)
         {
-            var m = cc.instantiate(this.map_1);
+            var m = this.createMap();
             m.x = map.x - fix;
             m.y = map.y + fix;
             m.scaleX = -m1.scaleX;
@@ -990,18 +1271,31 @@ cc.Class({
 
     },
 
+    updateCamera: function()
+    {
+        this.game_bg.position = this.myCar.position;
+        this.game_uibg.position = this.myCar.position;
+        this.game_white.position = this.myCar.position;
+        this.gameCamera.position = this.myCar.position;
+    },
+
     update: function(dt) {
         if(this.state == "start")
         {
-            this.updateMap();
+            this.gameDt += dt;
+            if(this.gameDt>1/10)
+            {
+                this.updateMap();
+                this.updateLevel(this.gameDt);
+                this.updateProp(this.gameDt);
 
-            this.updateLevel(dt);
+                this.updateHitPro(this.gameDt);
+                this.updateHotPro(this.gameDt);
+
+                this.gameDt = 0;
+            }
             this.updateYuGao();
-            this.updatePoint(dt);
-            this.updateProp(dt);
-
-            this.updateHitPro(dt);
-            this.updateHotPro(dt);
+            //this.updatePoint(dt);
         }
     }
 });

@@ -9,14 +9,6 @@ cc.Class({
         rotateSpeed: 120, // 旋转速度
         lv: 1,
 
-        pstreak: {
-            default: null,
-            type: cc.Prefab
-        },
-        pbaozha: {
-            default: null,
-            type: cc.Prefab
-        },
         pdeng1: {
             default: null,
             type: cc.Prefab
@@ -33,7 +25,7 @@ cc.Class({
 
     onLoad: function()
     {
-        this.game = cc.find("Canvas").getComponent("game");
+        this.game = cc.find("Canvas/node_gamecan").getComponent("game");
         this.body = this.node.getComponent("cc.RigidBody");
         this.shadow = cc.find("shadow",this.node);
 
@@ -46,6 +38,7 @@ cc.Class({
         this.dirAng = 0;
         this.streakDt = 0;
         this.isMyCar = false;
+        this.isColl = false;
 
         this.speedVar = Math.random()*4+1;
         this.speedVarDt = 0;
@@ -58,13 +51,25 @@ cc.Class({
         if(this.game.myCar.sc.state == "hit")
             this.showAim();
 
-        this.initDeng();
+        //this.initDeng();
+    },
+
+    resetData: function()
+    {
+        this.isColl = false;
+        this.node.opacity = 255;
+        this.state = "born";
+        this.initLv();
+        if(this.game && this.game.myCar.sc.state == "hit")
+            this.showAim();
+        else
+            this.hideAim();
     },
 
     initSpeed: function()
     {
         this.node.rotation = this.node.carAng;
-        this.body.linearVelocity = this.node.carDir.mulSelf(-this.speed);
+        //this.body.linearVelocity = this.node.carDir.mulSelf(-this.speed);
         this.updateShadow();
     },
 
@@ -105,13 +110,13 @@ cc.Class({
         this.speed = config.myCarSpeed*config.carLv[this.lv-1].speed;
         var s = (Math.random() - 0.5) * 2 *(this.speed*0.2);
         this.speed += s;
-        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
     },
 
     subSpeed: function()
     {
         this.speed = 0;
-        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
         var self = this;
         this.node.stopActionByTag(2);
@@ -131,16 +136,58 @@ cc.Class({
         {
             this.state = "die";
             this.node.isCollMyCar = isCollMyCar;
+
+            //this.node.runAction(cc.sequence(
+            //    cc.delayTime(0.1),
+            //    cc.fadeOut()
+            //));
+            var self = this;
+            if(this.streak1)
+            {
+                var streak1 = this.streak1;
+                this.streak1.runAction(cc.sequence(
+                    cc.delayTime(5),
+                    cc.callFunc(function(){
+                        self.game.destoryStreak(streak1);
+                    })
+                ));
+                this.streak1 = null;
+            }
+            if(this.streak2)
+            {
+                var streak2 = this.streak2;
+                this.streak2.runAction(cc.sequence(
+                    cc.delayTime(5),
+                    cc.callFunc(function(){
+                        self.game.destoryStreak(streak2);
+                    })
+                ));
+                this.streak2 = null;
+            }
+
+            //var self = this;
+            //var baozha = this.game.createBaozha();
+            //baozha.position = this.node.position;
+            //this.game.layer_game.addChild(baozha,10);
+            //baozha.runAction(cc.sequence(
+            //    cc.delayTime(1),
+            //    cc.callFunc(function(){
+            //        self.game.destoryBaozha(baozha);
+            //    })
+            //));
+            //
+            //var smoke = this.game.createSmoke();
+            //smoke.position = this.node.position;
+            //this.game.layer_game.addChild(smoke,10);
+            //smoke.runAction(cc.sequence(
+            //    cc.delayTime(2),
+            //    cc.callFunc(function(){
+            //        self.game.destorySmoke(smoke);
+            //    })
+            //));
+
             this.game.carDie(this.node);
 
-            this.node.runAction(cc.sequence(
-                cc.delayTime(0.1),
-                cc.removeSelf()
-            ));
-
-            var baozha = cc.instantiate(this.pbaozha);
-            baozha.position = this.node.position;
-            this.node.parent.addChild(baozha,10);
         }
     },
 
@@ -171,11 +218,11 @@ cc.Class({
         if(this.streak1 || this.streak2)
             return;
 
-        this.streak1 = cc.instantiate(this.pstreak);
-        this.game.node_game.addChild(this.streak1);
+        this.streak1 = this.game.createStreak();
+        this.game.layer_game.addChild(this.streak1);
 
-        this.streak2 = cc.instantiate(this.pstreak);
-        this.game.node_game.addChild(this.streak2);
+        this.streak2 = this.game.createStreak();
+        this.game.layer_game.addChild(this.streak2);
 
         this.streak1.streakDt = this.streakDt;
         this.streak2.streakDt = this.streakDt;
@@ -183,19 +230,26 @@ cc.Class({
 
     removeStreak: function()
     {
+        var self = this;
         if(this.streak1 && this.streakDt - this.streak1.streakDt > 0.2)
         {
+            var streak1 = this.streak1;
             this.streak1.runAction(cc.sequence(
-                cc.delayTime(10),
-                cc.removeSelf(true)
+                cc.delayTime(5),
+                cc.callFunc(function(){
+                    self.game.destoryStreak(streak1);
+                })
             ));
             this.streak1 = null;
         }
         if(this.streak2 && this.streakDt - this.streak2.streakDt > 0.2)
         {
+            var streak2 = this.streak2;
             this.streak2.runAction(cc.sequence(
-                cc.delayTime(10),
-                cc.removeSelf(true)
+                cc.delayTime(5),
+                cc.callFunc(function(){
+                    self.game.destoryStreak(streak2);
+                })
             ));
             this.streak2 = null;
         }
@@ -203,6 +257,8 @@ cc.Class({
 
     drawStreak: function()
     {
+        if(this.state != "die1")
+            return;
         this.addStreak();
 
         var v = cc.v2(-cc.winSize.width/2,-cc.winSize.height/2);
@@ -317,7 +373,7 @@ cc.Class({
             if(this.node.rotation - this.dirAng > 60)
                 this.dirAng = this.node.rotation - 60;
 
-            this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+            //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
 
         }
@@ -343,6 +399,12 @@ cc.Class({
             this.speedVar = Math.random()*4+1;
             this.changeSpeed();
         }
+
+        var p = this.node.position.add(this.getCurrVec(this.getCurrRad()).mulSelf(dt));
+        if(this.isColl)
+            p = this.node.position.add(this.getCurrVec(this.getCurrRad()).mulSelf(-dt/2));
+        this.node.position = p;
+        //this.body.syncPosition();
     },
 
 
@@ -373,7 +435,7 @@ cc.Class({
     // 只在两个碰撞体结束接触时被调用一次
     onEndContact: function (contact, selfCollider, otherCollider) {
 
-        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
     },
 
     // 每次将要处理碰撞体接触逻辑时被调用
@@ -412,6 +474,64 @@ cc.Class({
             //}
         }
 
+    },
+
+    onCollisionStay: function (other, self) {
+        //console.log('on collision stay');
+        if(other.tag == self.tag)
+        {
+            if(self.tag == 0)
+            {
+               this.isColl = true;
+            }
+        }
+    },
+
+    onCollisionEnter: function (other, self)
+    {
+        if(other.tag == self.tag)
+        {
+            if(self.tag == 0)
+            {
+                if(this.state != "die")
+                {
+                    if(other.node.sc.isMyCar)
+                    {
+                        this.isColl = true;
+                        //otherCollider.node.sc.isBaoHu || && otherCollider.node.sc.hp >= 1
+                        if(other.node.sc.state == "hit" || other.node.sc.state == "hot" )
+                            this.die(true);
+                    }
+                    else
+                    {
+                        this.die(false);
+                        if(other.node.sc.state != "die")
+                        {
+                            other.node.sc.die(false);
+                        }
+                    }
+
+                    var t = new Date().getTime();
+                    if(t-this.collTime>1000)
+                    {
+                        this.collTime = t;
+                        storage.playSound(this.game.audio_coll);
+                    }
+                }
+            }
+        }
+
+    },
+
+    onCollisionExit: function (other, self) {
+        //console.log('on collision exit');
+        if(other.tag == self.tag)
+        {
+            if(self.tag == 0)
+            {
+                this.isColl = false;
+            }
+        }
     }
 
 });

@@ -93,33 +93,61 @@ cc.Class({
         {
             var pitem = pitems[i];
 
+            var a = cc.find("a",pitem);
+            var b = cc.find("b",pitem);
+
             var a_get = cc.find("a/get",pitem);
             var b_get = cc.find("b/get",pitem);
 
+            var a_suo = cc.find("a/suo",pitem);
+            var b_suo = cc.find("b/suo",pitem);
+
+            var a_car = cc.find("a/car",pitem);
+            var b_car = cc.find("b/car",pitem);
+
+            var a_get_sp = cc.find("sp",a_get);
+            var b_get_sp = cc.find("sp",b_get);
+
+            a_get_sp.x = 0;
+            b_get_sp.x = 0;
             if(storage.getMyCarId() == a_get.itemId)
             {
-                this.res.setSpriteFrame("images/carport/using",a_get);
+                this.res.setSpriteFrame("images/common/box_3",a);
+                this.res.setSpriteFrame("images/carport/using",a_get_sp);
+                this.res.setSpriteFrame("images/common/btn_green",a_get);
                 a_get.getComponent("cc.Button").interactable = false;
+                a_car.getComponent("cc.Button").interactable = true;
+                a_suo.active = false;
             }
             else
             {
                 if(storage.isMyCarId(a_get.itemId))
                 {
-                    this.res.setSpriteFrame("images/carport/having",a_get);
+                    this.res.setSpriteFrame("images/common/box_3",a);
+                    this.res.setSpriteFrame("images/common/btn_green",a_get);
+                    this.res.setSpriteFrame("images/carport/having",a_get_sp);
                     a_get.getComponent("cc.Button").interactable = true;
+                    a_car.getComponent("cc.Button").interactable = true;
                     a_get.bState = "use";
                     if(a_get.itemId == 2 || a_get.itemId == 8)//vedio
                     {
                         var tar = cc.find("tar",a_get);
                         tar.active = false;
                     }
+
+                    a_suo.active = false;
                 }
                 else
                 {
+                    this.res.setSpriteFrame("images/common/box_4",a);
+                    a_car.getComponent("cc.Button").interactable = false;
+                    a_suo.active = true;
                     //vedio
                     if(a_get.itemId == 2 || a_get.itemId == 8)
                     {
-                        this.res.setSpriteFrame("images/carport/vedio_use",a_get);
+                        a_get_sp.x = -30;
+                        this.res.setSpriteFrame("images/common/btn_green",a_get);
+                        this.res.setSpriteFrame("images/carport/vedio",a_get_sp);
                         a_get.getComponent("cc.Button").interactable = true;
                         a_get.bState = "vedio";
                         var tar = cc.find("tar",a_get);
@@ -131,7 +159,8 @@ cc.Class({
                     }
                     else //进行10次游戏 4 //解锁 6 获得500k点数 10
                     {
-                        this.res.setSpriteFrame("images/carport/no",a_get);
+                        this.res.setSpriteFrame("images/common/btn_gray",a_get);
+                        this.res.setSpriteFrame("images/carport/no",a_get_sp);
                         a_get.getComponent("cc.Button").interactable = false;
                     }
                 }
@@ -139,15 +168,22 @@ cc.Class({
 
             if(storage.getMyCarId() == b_get.itemId)
             {
-                this.res.setSpriteFrame("images/carport/using",b_get);
+                this.res.setSpriteFrame("images/common/box_3",b);
+                this.res.setSpriteFrame("images/common/btn_green",b_get);
+                this.res.setSpriteFrame("images/carport/using",b_get_sp);
                 b_get.getComponent("cc.Button").interactable = false;
+                b_car.getComponent("cc.Button").interactable = true;
+                b_suo.active = false;
             }
             else
             {
                 if(storage.isMyCarId(b_get.itemId))
                 {
-                    this.res.setSpriteFrame("images/carport/having",b_get);
+                    this.res.setSpriteFrame("images/common/box_3",b);
+                    this.res.setSpriteFrame("images/common/btn_green",b_get);
+                    this.res.setSpriteFrame("images/carport/having",b_get_sp);
                     b_get.getComponent("cc.Button").interactable = true;
+                    b_car.getComponent("cc.Button").interactable = true;
                     b_get.bState = "use";
 
                     //分享
@@ -156,13 +192,20 @@ cc.Class({
                         var tar = cc.find("tar",a_get);
                         tar.active = false;
                     }
+
+                    b_suo.active = false;
                 }
                 else
                 {
+                    this.res.setSpriteFrame("images/common/box_4",b);
+                    b_car.getComponent("cc.Button").interactable = false;
+                    b_suo.active = true;
                     //分享
                     if(b_get.itemId == 3)
                     {
-                        this.res.setSpriteFrame("images/carport/vedio_use",b_get);
+                        b_get_sp.x = -30;
+                        this.res.setSpriteFrame("images/common/btn_green",b_get);
+                        this.res.setSpriteFrame("images/carport/vedio",b_get_sp);
                         b_get.getComponent("cc.Button").interactable = true;
                         b_get.bState = "share";
 
@@ -172,7 +215,8 @@ cc.Class({
                     }
                     else //login 1 7 //干掉警车 5 9  //进行6次升级 11
                     {
-                        this.res.setSpriteFrame("images/carport/no",b_get);
+                        this.res.setSpriteFrame("images/common/btn_gray",b_get);
+                        this.res.setSpriteFrame("images/carport/no",b_get_sp);
                         b_get.getComponent("cc.Button").interactable = false;
                     }
                 }
@@ -198,12 +242,12 @@ cc.Class({
                     if(itemId == 2)
                     {
                         if(storage.getCarVedio(itemId) >= 2)
-                            storage.setMyCarIds(itemId);
+                            storage.addMyCarIds(itemId);
                     }
                     else if(itemId == 8)
                     {
                         if(storage.getCarVedio(itemId) >= 3)
-                            storage.setMyCarIds(itemId);
+                            storage.addMyCarIds(itemId);
                     }
                     self.updateItems();
                 }
@@ -218,11 +262,11 @@ cc.Class({
                     if(itemId == 3)
                     {
                         if(storage.getCarShare(itemId) >= 3)
-                            storage.setMyCarIds(itemId);
+                            storage.addMyCarIds(itemId);
                     }
                     self.updateItems();
                 }
-            });
+            },"carport");
         }
 
     },

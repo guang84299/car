@@ -81,7 +81,7 @@
     "_enabled": true,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_fadeTime": 10,
+    "_fadeTime": 5,
     "_minSeg": 1,
     "_stroke": 5,
     "_texture": {
@@ -94,9 +94,9 @@
       "b": 255,
       "a": 255
     },
-    "_fastMode": true,
+    "_fastMode": false,
     "_N$preview": true,
-    "_id": "306A6/eR5D0Z0qHnlN2+gG"
+    "_id": ""
   },
   {
     "__type__": "cc.PrefabInfo",

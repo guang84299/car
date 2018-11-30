@@ -8,19 +8,11 @@ cc.Class({
         speed: 400,//速度
         rotateSpeed: 120, // 旋转速度
 
-        pstreak: {
-            default: null,
+        pspeeds: {
+            default: [],
             type: cc.Prefab
         },
-        pspeed: {
-            default: null,
-            type: cc.Prefab
-        },
-        phit: {
-            default: null,
-            type: cc.Prefab
-        },
-        phot: {
+        phurt: {
             default: null,
             type: cc.Prefab
         },
@@ -31,16 +23,12 @@ cc.Class({
         pbaohu: {
             default: null,
             type: cc.Prefab
-        },
-        pbaozha: {
-            default: null,
-            type: cc.Prefab
         }
     },
 
     onLoad: function()
     {
-        this.game = cc.find("Canvas").getComponent("game");
+        this.game = cc.find("Canvas/node_gamecan").getComponent("game");
         this.res = cc.find("Canvas").getComponent("res");
         this.body = this.node.getComponent("cc.RigidBody");
         this.shadow = cc.find("shadow",this.node);
@@ -75,26 +63,57 @@ cc.Class({
         this.hotNum = 0;//暴走次数
         this.eatPropRang = config.myCarEatRange;//吃道具范围
         this.isBaoHu = false;
+        this.isRange = false;
 
         this.streakDt = 0;
         this.isMyCar = true;
 
         this.initSpeed();
+        this.initUI();
         this.game.updateHp();
         this.game.updateSpeedUp();
         this.game.updateHit();
         this.game.updateHot();
+
+        this.changeSpeedDt = 0;
+    },
+
+    initUI: function()
+    {
+        var speed = cc.instantiate(this.pspeeds[Math.floor(storage.getMyCarId()/3)]);
+        speed.position = cc.v2(0,-this.node.height*0.8);
+        this.node.addChild(speed);
+        this.uispeed = speed;
+        this.uispeed.active = false;
+
+        var hurt = cc.instantiate(this.phurt);
+        this.node.addChild(hurt);
+        this.uihurt = hurt;
+        this.uihurt.active = false;
     },
 
     initSpeed: function()
     {
-        this.body.linearVelocity = cc.v2(0,this.speed);
+        //this.body.linearVelocity = cc.v2(0,this.speed);
         this.updateShadow();
+    },
+
+    changeSpeed: function(dt)
+    {
+        this.node.position = this.node.position.add(this.getCurrVec(this.getCurrRad()).mulSelf(dt));
+
+        //this.body.syncPosition();
+        //this.node.stopActionByTag(100);
+        //var ac = cc.repeatForever(cc.moveBy(1,this.getCurrVec(this.getCurrRad())));
+        //ac.setTag(100);
+        //this.node.runAction(ac);
+
+        this.game.updateCamera();
     },
 
     addBaoHu: function(time)
     {
-        //time = 100000;
+        time = 100000;
         var self = this;
         this.isBaoHu = true;
 
@@ -122,6 +141,7 @@ cc.Class({
     addRange: function()
     {
         var self = this;
+        this.isRange = true;
         this.eatPropRang = config.myCarEatRange*3;
         if(this.eatrange)
         {
@@ -130,17 +150,25 @@ cc.Class({
         else
         {
             this.eatrange = cc.instantiate(this.prange);
-            this.eatrange.scale = this.eatPropRang/this.eatrange.width/this.node.scale;
+            //this.eatrange.scale = this.eatPropRang/this.eatrange.width/this.node.scale;
             this.node.addChild(this.eatrange);
         }
 
         this.eatrange.runAction(cc.sequence(
-            cc.fadeIn(0.2),
+            cc.fadeTo(0.2,120),
             cc.delayTime(10),
             cc.callFunc(function(){
                 self.eatPropRang = config.myCarEatRange;
+                self.isRange = true;
             }),
             cc.fadeOut(0.2)
+        ));
+
+        this.eatrange.runAction(cc.repeatForever(
+            cc.sequence(
+                cc.scaleTo(1,0.5).easing(cc.easeSineOut()),
+                cc.scaleTo(1,1).easing(cc.easeSineOut())
+            )
         ));
     },
 
@@ -182,24 +210,16 @@ cc.Class({
         this.hotNum = 0;
         this.speed = config.myCarSpeed*1.5;
         this.rotateSpeed = config.myCarRotateSpeed*2;
-        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
-        var hot = cc.instantiate(this.phot);
-        hot.position = cc.v2(0,-this.node.height*0.8);
-        this.node.addChild(hot);
+        this.uispeed.active = true;
 
         var time = config.myCarHot[storage.getHotLv()].time;
 
-        var ac = cc.sequence(
-            cc.delayTime(time),
-            cc.removeSelf()
-        );
-        hot.runAction(ac);
-
         var ac2 = cc.sequence(
-            cc.scaleTo(1,1.5).easing(cc.easeSineOut()),
+            cc.scaleTo(1,1.7).easing(cc.easeSineOut()),
             cc.delayTime(time-2),
-            cc.scaleTo(1,0.7).easing(cc.easeSineOut()),
+            cc.scaleTo(1,1).easing(cc.easeSineOut()),
             cc.callFunc(function(){
                 self.speed = config.myCarSpeed;
                 self.rotateSpeed = config.myCarRotateSpeed;
@@ -208,12 +228,14 @@ cc.Class({
                 self.game.updateHot();
                 self.game.updateSpeedUp();
                 self.game.finishSpeedUp();
+                self.uispeed.active = false;
             })
         );
         ac2.setTag(2);
         this.node.runAction(ac2);
 
         this.game.updateHot(true);
+        this.game.createMyCarEmoji("hot");
 
         storage.playSound(this.game.audio_bianda);
     },
@@ -233,24 +255,16 @@ cc.Class({
         this.hitNum = 0;
         this.speed = config.myCarSpeed*1.5;
         this.rotateSpeed = config.myCarRotateSpeed*2;
-        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
-        var hit = cc.instantiate(this.phit);
-        hit.position = cc.v2(0,-this.node.height*0.8);
-        this.node.addChild(hit);
+        this.uispeed.active = true;
 
         var time = config.myCarHit[storage.getHitLv()].time;
 
-        var ac = cc.sequence(
-            cc.delayTime(time),
-            cc.removeSelf()
-        );
-        hit.runAction(ac);
-
         var ac2 = cc.sequence(
-            cc.scaleTo(1,1).easing(cc.easeSineOut()),
+            cc.scaleTo(1,1.3).easing(cc.easeSineOut()),
             cc.delayTime(time-2),
-            cc.scaleTo(1,0.7).easing(cc.easeSineOut()),
+            cc.scaleTo(1,1).easing(cc.easeSineOut()),
             cc.callFunc(function(){
                 self.speed = config.myCarSpeed;
                 self.rotateSpeed = config.myCarRotateSpeed;
@@ -258,12 +272,14 @@ cc.Class({
                 self.addBaoHu(2);
                 self.game.finishSpeedUp();
                 self.game.updateHit();
+                self.uispeed.active = false;
             })
         );
         ac2.setTag(2);
         this.node.runAction(ac2);
 
         this.game.updateHit(true);
+        this.game.createMyCarEmoji("hot");
 
         storage.playSound(this.game.audio_bianda);
     },
@@ -288,28 +304,23 @@ cc.Class({
             this.node.stopActionByTag(2);
 
             this.speed = config.myCarSpeed*1.5;
-            this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
-            var speed = cc.instantiate(this.pspeed);
-            speed.position = cc.v2(0,-this.node.height*0.8);
-            this.node.addChild(speed);
+            //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+            this.uispeed.active = true;
 
             var time = config.myCarUp[storage.getSpeedLv()].time;
-            var ac = cc.sequence(
-                cc.delayTime(time),
-                cc.removeSelf()
-            );
-            speed.runAction(ac);
 
             var ac2 = cc.sequence(
                 cc.delayTime(time),
                 cc.callFunc(function(){
                     self.speed = config.myCarSpeed;
                     self.game.finishSpeedUp();
+                    self.uispeed.active = false;
                 })
             );
             ac2.setTag(2);
             this.node.runAction(ac2);
             this.game.startSpeedUp();
+            this.game.createMyCarEmoji("speed");
         }
         this.game.updateSpeedUp();
 
@@ -371,28 +382,35 @@ cc.Class({
         if(this.streak1 || this.streak2)
             return;
 
-        this.streak1 = cc.instantiate(this.pstreak);
-        this.game.node_game.addChild(this.streak1);
+        this.streak1 = this.game.createStreak();
+        this.game.layer_game.addChild(this.streak1);
 
-        this.streak2 = cc.instantiate(this.pstreak);
-        this.game.node_game.addChild(this.streak2);
+        this.streak2 = this.game.createStreak();
+        this.game.layer_game.addChild(this.streak2);
     },
 
     removeStreak: function()
     {
+        var self = this;
         if(this.streak1 && this.streakDt - this.streak1.streakDt > 0.2)
         {
+            var streak1 = this.streak1;
             this.streak1.runAction(cc.sequence(
-                cc.delayTime(10),
-                cc.removeSelf(true)
+                cc.delayTime(5),
+                cc.callFunc(function(){
+                    self.game.destoryStreak(streak1);
+                })
             ));
             this.streak1 = null;
         }
         if(this.streak2 && this.streakDt - this.streak2.streakDt > 0.2)
         {
+            var streak2 = this.streak2;
             this.streak2.runAction(cc.sequence(
-                cc.delayTime(10),
-                cc.removeSelf(true)
+                cc.delayTime(5),
+                cc.callFunc(function(){
+                    self.game.destoryStreak(streak2);
+                })
             ));
             this.streak2 = null;
         }
@@ -586,7 +604,8 @@ cc.Class({
                 this.dirAng = this.node.rotation - 60;
             }
 
-            this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+            //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+
             this.drawStreak();
 
             //cc.log(dis);
@@ -595,6 +614,8 @@ cc.Class({
         {
             this.removeStreak();
         }
+
+        this.changeSpeed(dt);
     },
 
     rotateEaseIn: function(t,b,c,d)
@@ -624,6 +645,11 @@ cc.Class({
                 this.baohu.position = cc.v2(0,-this.node.height*(1-this.node.anchorY)-10);
             }
 
+            if(this.eatrange && this.eatrange.opacity>1)
+            {
+                this.eatrange.rotation = -this.node.rotation;
+                this.eatrange.position = cc.v2(0,-this.node.height*(1-this.node.anchorY)-10);
+            }
         }
     },
 
@@ -640,16 +666,20 @@ cc.Class({
             else
             {
                 var self = this;
+                this.uihurt.active = true;
+                this.uihurt.getComponent('cc.ParticleSystem').resetSystem();
                 this.node.stopActionByTag(3);
                 var ac2 = cc.sequence(
                     cc.delayTime(2),
                     cc.callFunc(function(){
                         self.hurtState = false;
+                        self.uihurt.active = false;
                     })
                 );
                 ac2.setTag(3);
                 this.node.runAction(ac2);
                 this.addBaoHu(2);
+                this.game.createMyCarEmoji("hurt");
             }
             this.game.updateHp(true);
             cc.log(this.hp);
@@ -662,7 +692,7 @@ cc.Class({
         {
             this.state = "die";
 
-            this.body.linearVelocity = cc.v2(0,0);
+            //this.body.linearVelocity = cc.v2(0,0);
             this.node.stopAllActions();
             var self = this;
             this.node.runAction(cc.sequence(
@@ -674,9 +704,25 @@ cc.Class({
                 })
             ));
 
-            var baozha = cc.instantiate(this.pbaozha);
+            var baozha = this.game.createBaozha();
             baozha.position = this.node.position;
-            this.node.parent.addChild(baozha,10);
+            this.game.layer_game.addChild(baozha,10);
+            baozha.runAction(cc.sequence(
+                cc.delayTime(1),
+                cc.callFunc(function(){
+                    self.game.destoryBaozha(baozha);
+                })
+            ));
+
+            var smoke = this.game.createSmoke();
+            smoke.position = this.node.position;
+            this.game.layer_game.addChild(smoke,10);
+            smoke.runAction(cc.sequence(
+                cc.delayTime(2),
+                cc.callFunc(function(){
+                    self.game.destorySmoke(smoke);
+                })
+            ));
 
             storage.playSound(this.game.audio_die);
 
@@ -686,6 +732,7 @@ cc.Class({
             this.game.updateSpeedUp();
             this.game.updateHit();
             this.game.updateHot();
+            this.game.createMyCarEmoji("die");
         }
     },
 
@@ -712,7 +759,9 @@ cc.Class({
     // 只在两个碰撞体结束接触时被调用一次
     onEndContact: function (contact, selfCollider, otherCollider) {
 
-        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+
+
         //if(this.dirState2 == "left")
         //    this.dirState = "left";
         //else if(this.dirState2 == "right")
@@ -743,8 +792,34 @@ cc.Class({
 
     onCollisionEnter: function (other, self)
     {
-        this.speedUp();
+        if(other.tag == self.tag)
+        {
+            if(self.tag == 1)
+                this.speedUp();
+
+        }
+
     },
+        /**
+         * 当碰撞产生后，碰撞结束前的情况下，每次计算碰撞结果后调用
+         * @param  {Collider} other 产生碰撞的另一个碰撞组件
+         * @param  {Collider} self  产生碰撞的自身的碰撞组件
+         */
+    //onCollisionStay: function (other, self) {
+    //    //console.log('on collision stay');
+    //    if(other.tag == self.tag)
+    //    {
+    //        if(self.tag == 1)
+    //        {
+    //            //var r1 = other.node.rotation%360;
+    //            //var r2 = self.node.rotation%360;
+    //            //if(r2 > r1 && r2-r1 < 180)
+    //            //    this.dirState = "left";
+    //            //else
+    //            //    this.dirState = "right";
+    //        }
+    //    }
+    //},
     /**
      * 当碰撞结束后调用
      * @param  {Collider} other 产生碰撞的另一个碰撞组件
@@ -752,7 +827,21 @@ cc.Class({
      */
     onCollisionExit: function (other, self) {
         //console.log('on collision exit');
-
+        if(other.tag == self.tag)
+        {
+            if(self.tag == 0)
+            {
+                if(this.state != "die" && !this.hurtState)
+                {
+                    if(!this.isBaoHu && this.state != "hit" && this.state != "hot")
+                        this.hurt();
+                }
+            }
+        }
+        //if(this.dirState == "left")
+        //    this.dirState = "up_left";
+        //else if(this.dirState == "right")
+        //    this.dirState = "up_right";
     }
 
 });

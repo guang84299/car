@@ -17,7 +17,7 @@
     "_parent": null,
     "_children": [],
     "_active": true,
-    "_level": 2,
+    "_level": 1,
     "_components": [
       {
         "__id__": 2
@@ -81,32 +81,34 @@
     "_enabled": true,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 1,
-    "_custom": false,
+    "_custom": true,
     "_file": {
-      "__uuid__": "53863eb2-0944-48f9-8cd8-e9328948e885"
+      "__uuid__": "ad12848f-ada9-4eda-af2a-aa48cc15aa8f"
     },
-    "_spriteFrame": null,
+    "_spriteFrame": {
+      "__uuid__": "ba40bfd9-4099-4651-89cd-71989793bce2"
+    },
     "_stopped": true,
     "playOnLoad": true,
-    "autoRemoveOnFinish": true,
-    "totalParticles": 400,
-    "duration": 0.05,
-    "emissionRate": 2000,
+    "autoRemoveOnFinish": false,
+    "totalParticles": 25,
+    "duration": 0.15,
+    "emissionRate": 125,
     "life": 0.2,
-    "lifeVar": 0.1,
+    "lifeVar": 0.05,
     "_startColor": {
       "__type__": "cc.Color",
       "r": 255,
-      "g": 102,
+      "g": 153,
       "b": 51,
-      "a": 226
+      "a": 255
     },
     "_startColorVar": {
       "__type__": "cc.Color",
       "r": 0,
       "g": 0,
-      "b": 0,
-      "a": 0
+      "b": 51,
+      "a": 25
     },
     "_endColor": {
       "__type__": "cc.Color",
@@ -122,13 +124,13 @@
       "b": 0,
       "a": 0
     },
-    "angle": 76,
+    "angle": 0,
     "angleVar": 180,
-    "startSize": 163,
+    "startSize": 100,
     "startSizeVar": 10,
-    "endSize": -1,
+    "endSize": 40,
     "endSizeVar": 0,
-    "startSpin": 0,
+    "startSpin": 720,
     "startSpinVar": 0,
     "endSpin": 0,
     "endSpinVar": 0,
@@ -146,12 +148,12 @@
     "emitterMode": 0,
     "gravity": {
       "__type__": "cc.Vec2",
-      "x": -20,
-      "y": 420
+      "x": 0,
+      "y": 0
     },
-    "speed": 732,
-    "speedVar": 20,
-    "tangentialAccel": -700,
+    "speed": 600,
+    "speedVar": 330,
+    "tangentialAccel": 0,
     "tangentialAccelVar": 0,
     "radialAccel": 0,
     "radialAccelVar": 0,
@@ -163,7 +165,7 @@
     "rotatePerS": 0,
     "rotatePerSVar": 0,
     "_N$preview": true,
-    "_id": "e72ewmv9NMpqgDjrDgCyj7"
+    "_id": ""
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -171,7 +173,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "6f165d61-e973-4634-8c75-cdaa03280254"
     },
     "fileId": "921FUKNL9NuqZFMals/TAF",
     "sync": false

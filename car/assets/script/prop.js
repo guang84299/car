@@ -12,7 +12,7 @@ cc.Class({
 
     onLoad: function()
     {
-        this.game = cc.find("Canvas").getComponent("game");
+        this.game = cc.find("Canvas/node_gamecan").getComponent("game");
         this.sprite = this.node.getComponent("cc.Sprite");
         this.node.sc = this;
         this.type = 1;
@@ -21,6 +21,21 @@ cc.Class({
         this.idleDt = 0;
 
         this.initType(this.node.proptype);
+    },
+
+    resetDate: function(proptype)
+    {
+        this.state = "born";
+        this.idleDt = 0;
+        this.node.scale = 1;
+        this.type = proptype;
+
+        this.sprite = this.node.getComponent("cc.Sprite");
+        this.sprite.spriteFrame = this.sp_type[proptype-1];
+        if(proptype == 4)
+        {
+            this.pointNum = Math.floor(Math.random()*450+50);
+        }
     },
 
     initType: function(type)
@@ -36,10 +51,10 @@ cc.Class({
 
     die: function(isColl)
     {
+        var self = this;
         if(this.state != "die")
         {
             this.state = "die";
-            this.game.propDie(this.node,isColl);
 
             if(isColl)
             {
@@ -48,14 +63,18 @@ cc.Class({
                         cc.moveTo(0.2,this.game.myCar.position).easing(cc.easeSineOut()),
                         cc.scaleTo(0.2,0).easing(cc.easeSineIn())
                     ),
-                    cc.removeSelf()
+                    cc.callFunc(function(){
+                        self.game.propDie(self.node,isColl);
+                    })
                 ));
             }
             else
             {
                 this.node.runAction(cc.sequence(
                     cc.scaleTo(0.2,0).easing(cc.easeSineIn()),
-                    cc.removeSelf()
+                    cc.callFunc(function(){
+                        self.game.propDie(self.node,isColl);
+                    })
                 ));
             }
         }

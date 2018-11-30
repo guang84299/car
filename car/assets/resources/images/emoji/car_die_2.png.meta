@@ -1,0 +1,31 @@
+{
+  "ver": "2.2.0",
+  "uuid": "a08deef8-db18-4af9-b5e1-2cccba38e2a4",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "subMetas": {
+    "car_die_2": {
+      "ver": "1.0.3",
+      "uuid": "fee87555-f635-430b-b788-abc9e9a2b9a2",
+      "rawTextureUuid": "a08deef8-db18-4af9-b5e1-2cccba38e2a4",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 90,
+      "height": 91,
+      "rawWidth": 90,
+      "rawHeight": 91,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

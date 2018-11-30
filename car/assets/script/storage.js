@@ -3,10 +3,28 @@
  */
 module.exports = {
     pice:['k','m','b','t','a','aa','ab','ac','ad','ae','af','ag','ah','ai','aj','ak','al','am','an','ao','ap','aq','ar','as','at'],
+    audioContext: null,
+    effectContext: null,
     playMusic: function(music)
     {
         if(this.getMusic() == 1)
-            cc.audioEngine.play(music,true,0.6);
+        {
+            this.stopMusic();
+            if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
+            {
+                if(this.audioContext == null)
+                {
+                    this.audioContext = BK.createAudioContext();
+                    this.audioContext.loop = true;
+                    this.audioContext.src = "GameRes://"+music;
+                }
+                this.audioContext.play();
+            }
+            else
+            {
+                cc.audioEngine.play(music,true,0.6);
+            }
+        }
     },
 
     pauseMusic: function()
@@ -23,13 +41,36 @@ module.exports = {
 
     stopMusic: function()
     {
-        cc.audioEngine.stopAll();
+        if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
+        {
+            if(this.audioContext)
+                this.audioContext.pause();
+        }
+        else
+        {
+            cc.audioEngine.stopAll();
+        }
     },
 
     playSound: function(sound)
     {
         if(this.getSound() == 1)
-            cc.audioEngine.play(sound,false,1);
+        {
+            if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
+            {
+                if(this.effectContext == null)
+                {
+                    this.effectContext = BK.createAudioContext({'type':'effect'});
+                }
+                //播放多个音效
+                this.effectContext.src = "GameRes://"+sound;
+                this.effectContext.play()
+            }
+            else
+            {
+                cc.audioEngine.play(sound,false,1);
+            }
+        }
     },
 
     setFirst: function(first)
@@ -46,11 +87,11 @@ module.exports = {
 
     setPoint: function(point)
     {
-        cc.sys.localStorage.setItem("point",point);
+        cc.sys.localStorage.setItem("point",Math.floor(point));
 
         if(point>=500000 && point < 500100)
         {
-            this.setMyCarIds(10);
+            this.addMyCarIds(10);
         }
     },
 
@@ -63,7 +104,7 @@ module.exports = {
 
     setMaxPoint: function(point)
     {
-        cc.sys.localStorage.setItem("maxpoint",point);
+        cc.sys.localStorage.setItem("maxpoint",Math.floor(point));
     },
 
     getMaxPoint: function()
@@ -79,7 +120,7 @@ module.exports = {
 
         if(this.getLvUpNum()==6)
         {
-            this.setMyCarIds(11);
+            this.addMyCarIds(11);
         }
     },
 
@@ -96,7 +137,7 @@ module.exports = {
 
         if(this.getLvUpNum()==6)
         {
-            this.setMyCarIds(11);
+            this.addMyCarIds(11);
         }
     },
 
@@ -113,7 +154,7 @@ module.exports = {
 
         if(this.getLvUpNum()==6)
         {
-            this.setMyCarIds(11);
+            this.addMyCarIds(11);
         }
     },
 
@@ -130,7 +171,7 @@ module.exports = {
 
         if(this.getLvUpNum()==6)
         {
-            this.setMyCarIds(11);
+            this.addMyCarIds(11);
         }
     },
 
@@ -162,7 +203,7 @@ module.exports = {
         return false;
     },
 
-    setMyCarIds: function(id)
+    addMyCarIds: function(id)
     {
         if(!this.isMyCarId(id))
         {
@@ -171,9 +212,14 @@ module.exports = {
 
             if(this.getJieSuoNum()>=3)
             {
-                this.setMyCarIds(6);
+                this.addMyCarIds(6);
             }
         }
+    },
+
+    setMyCarIds: function(ids)
+    {
+        cc.sys.localStorage.setItem("mycarIds",ids);
     },
 
     getMyCarIds: function()
@@ -257,7 +303,7 @@ module.exports = {
         cc.sys.localStorage.setItem("game_num",num);
         if(num>=10 && num < 12)
         {
-            this.setMyCarIds(4);
+            this.addMyCarIds(4);
         }
     },
 
@@ -274,12 +320,12 @@ module.exports = {
 
         if(num>=500 && num <= 502)
         {
-            this.setMyCarIds(5);
+            this.addMyCarIds(5);
         }
 
         if(num>=1000 && num <= 1002)
         {
-            this.setMyCarIds(9);
+            this.addMyCarIds(9);
         }
     },
 
@@ -393,9 +439,11 @@ module.exports = {
         var s = '';
         var n = 0;
         if(str.length>3)
-            n = parseInt(str.length/3);
+            n = parseInt((str.length-1)/3);
         if(n>0)
-            coin = parseFloat(coin/Math.pow(1000,n)).toFixed(0);
+        {
+            coin = parseFloat(coin/Math.pow(1000,n));//.toFixed(0);
+        }
         str = coin+"";
         var l = str.split(".")[0].split("").reverse();
         for (var i = 0; i < l.length; i++) {
@@ -407,6 +455,43 @@ module.exports = {
             //var r = str.split(".")[1];
             //s = s + "." + r;
             s += this.pice[n-1];
+        }
+        return s;
+    },
+
+    getLabelStr: function(str,num)
+    {
+        var s = "";
+        var len = 0;
+        for (var i=0; i<str.length; i++) {
+            var c = str.charCodeAt(i);
+            //单字节加1
+            if ((c >= 0x0001 && c <= 0x007e) || (0xff60<=c && c<=0xff9f)) {
+                len++;
+                if(len>=num-2)
+                {
+                    if(i != str.length-1)
+                        s += "...";
+                    break;
+                }
+                else
+                {
+                    s += str.charAt(i);
+                }
+            }
+            else {
+                len+=2;
+                if(len>=num-2)
+                {
+                    if(i != str.length-1)
+                        s += "...";
+                    break;
+                }
+                else
+                {
+                    s += str.charAt(i);
+                }
+            }
         }
         return s;
     }
