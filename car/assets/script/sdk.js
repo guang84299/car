@@ -11,11 +11,11 @@ module.exports = {
         {
             if(isLong)
             {
-                wx.vibrateLong({});
+                //wx.vibrateLong({});
             }
             else
             {
-                wx.vibrateShort({});
+                //wx.vibrateShort({});
             }
         }
     },
@@ -93,7 +93,7 @@ module.exports = {
             BK.QQ.getRankListWithoutRoom(attr, order, rankType, function(errCode, cmd, data) {
                 BK.Script.log(1,1,"-------rank a1 callback  cmd" + cmd + " errCode:" + errCode + "  data:" + JSON.stringify(data));
                 // 返回错误码信息
-                if (errCode !== 0) {
+                if (errCode != 0) {
                     BK.Script.log(1,1,'------获取排行榜数据失败!错误码：' + errCode);
                     if(callback)
                         callback(null);
@@ -139,7 +139,7 @@ module.exports = {
             BK.QQ.getRankListWithoutRoom(attr, order, rankType, function(errCode, cmd, data) {
                 BK.Script.log(1,1,"-------wxFuhuoRank callback  cmd" + cmd + " errCode:" + errCode + "  data:" + JSON.stringify(data));
                 // 返回错误码信息
-                if (errCode !== 0) {
+                if (errCode != 0) {
                     if(callback)
                         callback(null);
                     return;
@@ -234,23 +234,14 @@ module.exports = {
                 if(self.bannerAd == null)
                 {
                     self.bannerAd = BK.Advertisement.createBannerAd({
-                        viewId:1001
+                        viewId:1003
                     });
                     self.bannerAd.onLoad(function () {
-                        //广告加载成功
-                        if(!self.bannershow)
-                        {
-                            self.wxBannerHide();
-                        }
                     });
                     self.bannerAd.onError(function (err) {
                         //加载失败
                         var msg = err.msg;
                         var code = err.code;
-                        if(!self.bannershow)
-                        {
-                            self.wxBannerHide();
-                        }
                         BK.Script.log(1, 1, "展示失败 msg:" + msg +"     "+code);
                     });
                 }
@@ -286,22 +277,45 @@ module.exports = {
             var title = "[ QQ 红包 ] 恭喜发财 玩星辉联赛，百元红包等你来领！";
             var imageUrl = "http://www.qiqiup.com/gun.gif";
 
-            BK.Share.share({
-                qqImgUrl: imageUrl,
-                summary: title,
-                extendInfo: query,
-                success: function(succObj){
-                    BK.Console.log('Waaaah! share success', succObj.code, JSON.stringify(succObj.data));
-                    if(callback)
-                        callback(true);
-                },
-                fail: function(failObj){
-                    BK.Console.log('Waaaah! share fail', failObj.code, JSON.stringify(failObj.msg));
+            //BK.Share.share({
+            //    qqImgUrl: imageUrl,
+            //    summary: title,
+            //    extendInfo: query,
+            //    success: function(succObj){
+            //        BK.Console.log('Waaaah! share success', succObj.code, JSON.stringify(succObj.data));
+            //        if(callback)
+            //            callback(true);
+            //    },
+            //    fail: function(failObj){
+            //        BK.Console.log('Waaaah! share fail', failObj.code, JSON.stringify(failObj.msg));
+            //        if(callback)
+            //            callback(false);
+            //    },
+            //    complete: function(){
+            //        BK.Console.log('Waaaah! share complete');
+            //    }
+            //});
+
+            BK.QQ.shareToArk(0, title, imageUrl, true, query,function (errCode, cmd, data) {
+                if (errCode == 0) {
+                    BK.Script.log(1, 1," ret:" + data.ret +  // 是否成功 (0:成功，1：不成功)
+                    " aioType:" + data.aioType + // 聊天类型 （1：个人，4：群，5：讨论组，6：热聊）
+                    " gameId:" + data.gameId); // 游戏 id
+                    if(data.ret == 0)
+                    {
+                        if(callback)
+                            callback(true);
+                    }
+                    else
+                    {
+                        if(callback)
+                            callback(false);
+                    }
+                }
+                else
+                {
                     if(callback)
                         callback(false);
-                },
-                complete: function(){
-                    BK.Console.log('Waaaah! share complete');
                 }
             });
         }
@@ -309,6 +323,34 @@ module.exports = {
         {
             if(callback)
                 callback(true);
+        }
+    },
+
+    skipGame: function(gameId,url)
+    {
+        if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
+        {
+            if(gameId)
+            {
+                var launcher, retObj ;
+                launcher = new mqqPlayGame({
+                    src: 221//src为上报用的字段
+                });
+                retObj = launcher.playGame(gameId);
+            }
+            else if(url && url.length > 5)
+            {
+                BK.MQQ.Webview.open(url);
+            }
+        }
+    },
+
+    shortcut: function()
+    {
+        if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
+        {
+            var extendInfo = "shortcut";//扩展字段
+            BK.QQ.createShortCut(extendInfo)
         }
     }
 };

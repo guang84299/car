@@ -40,6 +40,22 @@ window.i18n.languages['zh'] = {
     "over_label_text": {
         "max_point":"最高：",
         "curr_point":"本次："
+    },
+
+    "baoxiang_label_text": {
+        "desc":"马上获得奖励点数"
+    },
+
+    "randpoint_label_text": {
+        "desc":"已获得奖励点数"
+    },
+
+    "addspeed_label_text": {
+        "desc":"本局加速10%"
+    },
+
+    "adclose_label_text": {
+        "desc":"观看视频关闭此条形广告"
     }
 };
 

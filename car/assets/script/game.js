@@ -3,7 +3,6 @@
  */
 var config = require("config");
 var storage = require("storage");
-var sdk = require("sdk");
 const i18n = require('LanguageData');
 i18n.init('zh');
 
@@ -100,27 +99,40 @@ cc.Class({
 
     initPhysics: function()
     {
-        cc.director.getPhysicsManager().enabled = false;
+        cc.director.getPhysicsManager().enabled = true;
         //cc.director.getPhysicsManager().debugDrawFlags = cc.PhysicsManager.DrawBits.e_aabbBit |
         //cc.PhysicsManager.DrawBits.e_pairBit |
         //cc.PhysicsManager.DrawBits.e_centerOfMassBit |
         //cc.PhysicsManager.DrawBits.e_jointBit |
         //cc.PhysicsManager.DrawBits.e_shapeBit;
         cc.director.getPhysicsManager().debugDrawFlags = 0;
-        //cc.PhysicsManager.FIXED_TIME_STEP = 1/20;
+        cc.PhysicsManager.FIXED_TIME_STEP = 1/30;
         cc.PhysicsManager.VELOCITY_ITERATIONS = 6;
         cc.PhysicsManager.POSITION_ITERATIONS = 6;
-        //cc.PhysicsManager.MAX_ACCUMULATOR = cc.PhysicsManager.FIXED_TIME_STEP*2;
-        //cc.director.getPhysicsManager().enabledAccumulator = false;
+        cc.PhysicsManager.MAX_ACCUMULATOR = cc.PhysicsManager.FIXED_TIME_STEP*2;
+        //cc.director.getPhysicsManager().enabledAccumulator = true;
         cc.director.getPhysicsManager().gravity = cc.v2(0,0);
 
 
 
         //cc.director.getPhysicsManager().attachDebugDrawToCamera(this.gameCamera);
         var manager = cc.director.getCollisionManager();
-        manager.enabled = false;
+        manager.enabled = true;
         //manager.enabledDebugDraw = true;
         //manager.enabledDrawBoundingBox = true;
+
+
+        //var CameraManager = cc.Class({
+        //    game: null,
+        //    ctor: function (game) {
+        //        this.game = game;
+        //    },
+        //    update:function(dt)
+        //    {
+        //        this.game.updateCamera();
+        //    }
+        //});
+        //this.cameraManager = new CameraManager(this);
     },
 
     initData: function()
@@ -135,6 +147,11 @@ cc.Class({
                 var enemy = cc.instantiate(this.pCars[n]); // 创建节点
                 enemyPool.put(enemy); // 通过 putInPool 接口放入对象池
             }
+            //var enemyPool = [];
+            //for (var i = 0; i < 12; i++) {
+            //    var enemy = cc.instantiate(this.pCars[n]); // 创建节点
+            //    enemyPool.push(enemy); // 通过 putInPool 接口放入对象池
+            //}
             this.enemyPools.push(enemyPool);
         }
 
@@ -207,12 +224,21 @@ cc.Class({
         } else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
             enemy = cc.instantiate(this.pCars[lv]);
         }
+        //if (this.enemyPools[lv].length > 0) { // 通过 size 接口判断对象池中是否有空闲的对象
+        //    enemy = this.enemyPools[lv][0];
+        //    this.enemyPools[lv].splice(0,1);
+        //    enemy.getComponent('car').resetData();
+        //} else { // 如果没有空闲对象，也就是对象池中备用对象不够时，我们就用 cc.instantiate 重新创建
+        //    enemy = cc.instantiate(this.pCars[lv]);
+        //}
         return enemy;
     },
 
     destoryEnemy: function(enemy)
     {
         this.enemyPools[enemy.sc.lv-1].put(enemy);
+        //enemy.x = -1000000000000;
+        //this.enemyPools[enemy.sc.lv-1].push(enemy);
     },
 
     createYugao: function()
@@ -400,6 +426,24 @@ cc.Class({
         this.node_ui_node_hot_txt.v2 = this.node_ui_node_hot_txt.position;
         this.node_ui_node_hot_pro_huo = cc.find("pro/huo",this.node_ui_node_hot);
 
+        this.node_ui_baoxiang = cc.find("baoxiang",this.node_ui);
+        this.node_ui_adclose = cc.find("adclose",this.node_ui);
+
+        this.node_ui_baoxiang.runAction(cc.repeatForever(cc.spawn(
+            cc.sequence(
+                cc.scaleTo(0.5,1.3).easing(cc.easeSineOut()),
+                cc.scaleTo(0.5,1).easing(cc.easeSineOut()),
+                cc.delayTime(2)
+            ),
+            cc.repeat(cc.sequence(
+                cc.rotateBy(0.2,30).easing(cc.easeSineOut()),
+                cc.rotateBy(0.2,-30).easing(cc.easeSineOut())
+            ),2)
+        )));
+        this.node_ui_baoxiang.active = false;
+
+
+
         this.bgColors = [
             cc.color(91,105,123),
             cc.color(112,91,123),
@@ -414,8 +458,11 @@ cc.Class({
 
     resetData: function()
     {
+        this.initData();
         this.layer_game.destroyAllChildren();
         this.startGame();
+
+        this.node_ui_adclose.active = (storage.getAdCloseNum() != 2);
     },
 
     updateUI: function()
@@ -432,6 +479,8 @@ cc.Class({
 
     startGame: function()
     {
+        //cc.director.getScheduler().scheduleUpdate(this.cameraManager, cc.Scheduler.PRIORITY_SYSTEM, false);
+
         this.game_bg.color = this.bgColors[Math.floor(Math.random()*this.bgColors.length)];
         this.initCar();
         this.state = "start";
@@ -440,6 +489,7 @@ cc.Class({
         this.levelDt = 0;
         this.point = 0;
         this.killCarNum = 0;
+        this.baozaCarNum = 0;
 
         this.cars = [];
         this.props = [];
@@ -462,7 +512,18 @@ cc.Class({
 
         storage.playMusic(this.audio_music);
 
-        sdk.hideBanner();
+        if(storage.getYinDao() == 0)
+        {
+            this.main.openYinDao(true);
+        }
+        else
+        {
+            if(storage.getAddSpeed() == 0)
+            {
+                this.main.openAddSpeed(true);
+            }
+        }
+
     },
 
     willGameOver: function()
@@ -482,6 +543,7 @@ cc.Class({
 
     gameOver: function()
     {
+        //cc.director.getScheduler().unscheduleUpdate(this.cameraManager);
         //结算
         storage.setPoint(this.point+storage.getPoint());
         storage.stopMusic();
@@ -492,6 +554,7 @@ cc.Class({
 
         if(this.point > storage.getMaxPoint())
             storage.setMaxPoint(this.point);
+        storage.setAddSpeed(0);
 
         this.main.openOver();
     },
@@ -700,8 +763,6 @@ cc.Class({
 
     addPoint: function(point)
     {
-        if(true)
-        return;
         if(this.shouyix2)
             point *= 2;
         this.point += point;
@@ -754,7 +815,7 @@ cc.Class({
         if(level>=config.carLevel.length) level = config.carLevel.length-1;
         this.currLevel = level;
 
-        if(this.cars.length < 8 && this.levelDt>1)//config.carLevel[level].num
+        if(this.cars.length < config.carLevel[level].num && this.levelDt>1)//config.carLevel[level].num
         {
             this.levelDt = 0;
 
@@ -780,6 +841,7 @@ cc.Class({
             //car.x =  (Math.random() - 0.5) * 2 * (cc.winSize.width*2) + this.myCar.x;
             //car.y =  (Math.random() - 0.5) * 2 * (cc.winSize.height*2) + this.myCar.y;
             car.position = carDir.mulSelf(cc.winSize.height*1.2).addSelf(this.myCar.position);
+            if(!car.parent)
             this.layer_game.addChild(car,10);
 
             var yugao = this.createYugao();
@@ -795,11 +857,21 @@ cc.Class({
         {
             this.par_speedup.rotation = this.myCar.rotation-180;
         }
+
+        //更新banner
+        if(this.gameTime > 10 && Math.floor(this.gameTime)%20 == 0)
+        {
+            this.main.sdk.hideBanner();
+        }
+        if(this.gameTime > 10 && Math.floor(this.gameTime)%30 == 0 && this.node_ui_adclose.active)
+        {
+            this.main.sdk.showBanner();
+        }
+
     },
 
     carDie: function(car)
     {
-        this.removeCars(car);
         if(this.myCar.sc.state == "hit")
         {
             if(car.isCollMyCar)
@@ -824,9 +896,23 @@ cc.Class({
         {
             this.addPoint(40);
         }
+        this.removeCars(car);
         this.gameCameraAnima();
 
         storage.playSound(this.audio_baozha);
+
+        this.baozaCarNum += 1;
+        if(this.baozaCarNum > 10 && this.baozaCarNum%15 == 0)
+        {
+            var self = this;
+            this.node_ui_baoxiang.active = true;
+            this.node_ui_baoxiang.runAction(cc.sequence(
+                cc.delayTime(10),
+                cc.callFunc(function(){
+                    self.node_ui_baoxiang.active = false;
+                })
+            ));
+        }
     },
 
     removeCars: function(car)
@@ -1053,22 +1139,25 @@ cc.Class({
 
     gameCameraAnima: function()
     {
-        //this.gameCamera.stopAllActions();
-        //this.gameCamera.runAction(cc.sequence(
-        //    cc.moveBy(0.05,12,3).easing(cc.easeSineOut()),
-        //    cc.moveBy(0.05,-12,-3).easing(cc.easeSineOut())
-        //));
-        sdk.vibrate();
+        this.gameCamera.stopAllActions();
+        this.gameCamera.runAction(cc.sequence(
+            cc.moveBy(0.05,12,3).easing(cc.easeSineOut()),
+            cc.moveBy(0.05,-12,-3).easing(cc.easeSineOut())
+        ));
+        this.main.sdk.vibrate();
     },
 
 
     click: function(event,data)
     {
-        if(data == "home")
+        if(data == "baoxiang")
         {
-            cc.director.loadScene("main");
+            this.main.openBaoXiang();
         }
-
+        else if(data == "adclose")
+        {
+            this.main.openAdClose(true);
+        }
         cc.log(data);
     },
 
@@ -1273,17 +1362,19 @@ cc.Class({
 
     updateCamera: function()
     {
+        this.gameCamera.position = this.myCar.position;
         this.game_bg.position = this.myCar.position;
         this.game_uibg.position = this.myCar.position;
         this.game_white.position = this.myCar.position;
-        this.gameCamera.position = this.myCar.position;
     },
 
     update: function(dt) {
         if(this.state == "start")
         {
+            cc.director.getPhysicsManager().update(dt);
+            this.updateCamera();
             this.gameDt += dt;
-            if(this.gameDt>1/10)
+            if(this.gameDt>1/20)
             {
                 this.updateMap();
                 this.updateLevel(this.gameDt);
@@ -1295,7 +1386,7 @@ cc.Class({
                 this.gameDt = 0;
             }
             this.updateYuGao();
-            //this.updatePoint(dt);
+            this.updatePoint(dt);
         }
     }
 });

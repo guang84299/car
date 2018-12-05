@@ -10,20 +10,20 @@ module.exports = {
         if(this.getMusic() == 1)
         {
             this.stopMusic();
-            if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
-            {
-                if(this.audioContext == null)
-                {
-                    this.audioContext = BK.createAudioContext();
-                    this.audioContext.loop = true;
-                    this.audioContext.src = "GameRes://"+music;
-                }
-                this.audioContext.play();
-            }
-            else
-            {
+            //if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
+            //{
+            //    if(this.audioContext == null)
+            //    {
+            //        this.audioContext = BK.createAudioContext();
+            //        this.audioContext.loop = true;
+            //        this.audioContext.src = "GameRes://"+music;
+            //    }
+            //    this.audioContext.play();
+            //}
+            //else
+            //{
                 cc.audioEngine.play(music,true,0.6);
-            }
+            //}
         }
     },
 
@@ -41,35 +41,35 @@ module.exports = {
 
     stopMusic: function()
     {
-        if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
-        {
-            if(this.audioContext)
-                this.audioContext.pause();
-        }
-        else
-        {
+        //if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
+        //{
+        //    if(this.audioContext)
+        //        this.audioContext.pause();
+        //}
+        //else
+        //{
             cc.audioEngine.stopAll();
-        }
+        //}
     },
 
     playSound: function(sound)
     {
         if(this.getSound() == 1)
         {
-            if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
-            {
-                if(this.effectContext == null)
-                {
-                    this.effectContext = BK.createAudioContext({'type':'effect'});
-                }
-                //播放多个音效
-                this.effectContext.src = "GameRes://"+sound;
-                this.effectContext.play()
-            }
-            else
-            {
+            //if(cc.sys.os == cc.sys.OS_ANDROID || cc.sys.os == cc.sys.OS_IOS)
+            //{
+            //    if(this.effectContext == null)
+            //    {
+            //        this.effectContext = BK.createAudioContext({'type':'effect'});
+            //    }
+            //    //播放多个音效
+            //    this.effectContext.src = "GameRes://"+sound;
+            //    this.effectContext.play()
+            //}
+            //else
+            //{
                 cc.audioEngine.play(sound,false,1);
-            }
+            //}
         }
     },
 
@@ -404,6 +404,50 @@ module.exports = {
         var vibrate = cc.sys.localStorage.getItem("vibrate");
         vibrate = vibrate ? vibrate : 0;
         return Number(vibrate);
+    },
+
+    setAddSpeed: function(addspeed)
+    {
+        cc.sys.localStorage.setItem("addspeed",addspeed);
+    },
+    getAddSpeed: function()
+    {
+        var addspeed = cc.sys.localStorage.getItem("addspeed");
+        addspeed = addspeed ? addspeed : 0;
+        return Number(addspeed);
+    },
+
+    setAdCloseTime: function(time)
+    {
+        cc.sys.localStorage.setItem("adclose_time",time);
+    },
+    getAdCloseTime: function()
+    {
+        var time = cc.sys.localStorage.getItem("adclose_time");
+        time = time ? time : 0;
+        return Number(time);
+    },
+
+    setAdCloseNum: function(num)
+    {
+        cc.sys.localStorage.setItem("adclose_num",num);
+    },
+    getAdCloseNum: function()
+    {
+        var num = cc.sys.localStorage.getItem("adclose_num");
+        num = num ? num : 0;
+        return Number(num);
+    },
+
+    setYinDao: function(yindao)
+    {
+        cc.sys.localStorage.setItem("yindao",yindao);
+    },
+    getYinDao: function()
+    {
+        var yindao = cc.sys.localStorage.getItem("yindao");
+        yindao = yindao ? yindao : 0;
+        return Number(yindao);
     },
 
     scientificToNumber: function(num) {

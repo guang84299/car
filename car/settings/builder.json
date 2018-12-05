@@ -35,7 +35,7 @@
   },
   "startScene": "21a49494-04d3-435c-a9cb-c2611d9d8468",
   "title": "car",
-  "webOrientation": "auto",
+  "webOrientation": "portrait",
   "wechatgame": {
     "REMOTE_SERVER_ROOT": "",
     "appid": "wx0d8639cd14d1d47b",

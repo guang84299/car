@@ -35,12 +35,41 @@ cc.Class({
         node_rank: {
             default: null,
             type: cc.Prefab
+        },
+        node_baoxiang: {
+            default: null,
+            type: cc.Prefab
+        },
+        node_randpoint: {
+            default: null,
+            type: cc.Prefab
+        },
+        node_addspeed: {
+            default: null,
+            type: cc.Prefab
+        },
+        node_adclose: {
+            default: null,
+            type: cc.Prefab
+        },
+        node_shortcut: {
+            default: null,
+            type: cc.Prefab
+        },
+        node_yindao: {
+            default: null,
+            type: cc.Prefab
+        },
+        node_youhui: {
+            default: null,
+            type: cc.Prefab
         }
     },
 
     onLoad: function() {
         this.res = cc.find("Canvas").getComponent("res");
         this.qianqista = qianqista;
+        this.sdk = sdk;
         this.GAME = {};
         if(storage.getFirst() == 0)
         {
@@ -58,7 +87,7 @@ cc.Class({
         this.updateUI();
 
         //cc.game.addPersistRootNode(this.node);
-        cc.game.setFrameRate(60);
+        //cc.game.setFrameRate(40);
         //cc.debug.setDisplayStats(true);
         //storage.setSpeedLv(0);
         //storage.setPoint(10000);
@@ -116,6 +145,11 @@ cc.Class({
                 //storage.playMusic(self.res.audio_bgm);
             });
         }
+
+        if(storage.getYinDao() == 1)
+        {
+            storage.setYinDao(0);
+        }
     },
 
     updateData: function()
@@ -170,6 +204,9 @@ cc.Class({
             this.updateUI();
             this.updateShouYi();
             this.initData();
+
+            //storage.setHpLv(0);
+            //storage.setAdCloseNum(0);
         }
         else
         {
@@ -232,7 +269,7 @@ cc.Class({
 
     updateUIControl: function()
     {
-        this.GAME.sharecard = false;
+        this.GAME.skipgame = null;
 
         if(this.GAME.control.length>0)
         {
@@ -240,11 +277,12 @@ cc.Class({
             for(var i=0;i<this.GAME.control.length;i++)
             {
                 var con = this.GAME.control[i];
-                if(con.id == "sharecard")
+                if(con.id == "skipgame")
                 {
-                    if(con.value == "1")
+                    if(con.value)
                     {
-                        this.GAME.sharecard = true;
+                        var s = con.value.replace(/\'/g,"\"");
+                        this.GAME.skipgame = JSON.parse(s);
                     }
                 }
             }
@@ -253,8 +291,14 @@ cc.Class({
 
         if(this.GAME.control.length>0)
         {
-
+            if(this.GAME.skipgame)
+            {
+                this.skipgame.active = this.GAME.skipgame.state ? true : false;
+                this.res.loadPic(this.GAME.skipgame.pic,this.skipgame);
+            }
         }
+
+        this.openShortCut();
     },
 
     initData: function()
@@ -296,6 +340,12 @@ cc.Class({
                 update = true;
             }
 
+        }
+
+        if(now.getTime() - storage.getAdCloseTime() > 24*60*60*1000)
+        {
+            storage.setAdCloseNum(0);
+            storage.setAdCloseTime(now.getTime());
         }
 
         if(update)
@@ -343,10 +393,22 @@ cc.Class({
         this.shouyi_time = cc.find("shouyi/time",this.node_main);
         this.shouyi_time_str = this.shouyi_time.getComponent("cc.Label");
 
+        this.skipgame = cc.find("skipgame",this.node_main);
+
 
         this.map_1.runAction(cc.repeatForever(cc.moveBy(13,0,-1000)));
         this.map_2.runAction(cc.repeatForever(cc.moveBy(13,0,-1000)));
         this.updateShouYi();
+
+        this.skipgame.runAction(cc.repeatForever(cc.sequence(
+            cc.repeat(cc.sequence(
+                cc.rotateBy(0.2,20).easing(cc.easeSineOut()),
+                cc.rotateBy(0.2,-40).easing(cc.easeSineOut()),
+                cc.rotateBy(0.2,20).easing(cc.easeSineOut())
+            ),2),
+            cc.delayTime(3)
+        )));
+        this.skipgame.active = false;
     },
 
     updateUI: function()
@@ -509,8 +571,58 @@ cc.Class({
         node_shouyi.sc.show();
     },
 
+    openBaoXiang: function()
+    {
+        var node_baoxiang = cc.instantiate(this.node_baoxiang);
+        this.node.addChild(node_baoxiang);
+        node_baoxiang.sc.show();
+    },
+
+    openRandPoint: function(isGame)
+    {
+        var node_randpoint = cc.instantiate(this.node_randpoint);
+        this.node.addChild(node_randpoint);
+        node_randpoint.sc.show(isGame);
+    },
+
+    openAddSpeed: function(isGame)
+    {
+        var node_addspeed = cc.instantiate(this.node_addspeed);
+        this.node.addChild(node_addspeed);
+        node_addspeed.sc.show(isGame);
+    },
+
+    openAdClose: function(isGame)
+    {
+        var node_adclose = cc.instantiate(this.node_adclose);
+        this.node.addChild(node_adclose);
+        node_adclose.sc.show(isGame);
+    },
+
+    openShortCut: function()
+    {
+        var node_shortcut = cc.instantiate(this.node_shortcut);
+        this.node.addChild(node_shortcut);
+        node_shortcut.sc.show();
+    },
+
+    openYinDao: function(isGame)
+    {
+        var node_yindao = cc.instantiate(this.node_yindao);
+        this.node.addChild(node_yindao);
+        node_yindao.sc.show(isGame);
+    },
+
+    openYouHui: function()
+    {
+        var node_youhui = cc.instantiate(this.node_youhui);
+        this.node.addChild(node_youhui);
+        node_youhui.sc.show();
+    },
+
     click: function(event,data)
     {
+        var self = this;
         if(data == "start")
         {
             this.node_main.active = false;
@@ -553,6 +665,29 @@ cc.Class({
         else if(data == "share")
         {
             sdk.share(null,"main");
+        }
+        else if(data == "addpoint")
+        {
+            sdk.showVedio(function(res){
+                if(res)
+                {
+                    self.openRandPoint();
+                }
+            });
+        }
+        else if(data == "addspeed")
+        {
+            sdk.showVedio(function(res){
+                if(res)
+                {
+                    storage.setAddSpeed(1);
+                    self.updateAddSpeed();
+                }
+            });
+        }
+        else if(data == "skipgame")
+        {
+            sdk.skipGame(this.GAME.skipgame.gameid,this.GAME.skipgame.url);
         }
         storage.playSound(this.res.audio_button);
         cc.log(data);
@@ -752,6 +887,19 @@ cc.Class({
                     this.updateShouYi();
                 }
             }
+        }
+    },
+
+    updateAddSpeed: function()
+    {
+        this.node_addspeed = cc.find("addspeed",this.node_main);
+        if(storage.getAddSpeed())
+        {
+            this.res.setSpriteFrame("images/main/addspeed_2",this.node_addspeed);
+        }
+        else
+        {
+            this.res.setSpriteFrame("images/main/addspeed_1",this.node_addspeed);
         }
     },
 

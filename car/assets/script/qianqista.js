@@ -135,11 +135,12 @@ module.exports = {
 //                        self.showcallback();
 //                }
 
-                BK.MQQ.Account.getNick(this.openid,function(openID,nick){
-                    self.userName = nick;
-                    self.getAvatarUrl(function(){
-                        self.initdata();
-                    });
+                //BK.MQQ.Account.getNick(this.openid,function(openID,nick){
+                //    self.userName = nick;
+                //
+                //});
+                self.getAvatarUrl(function(){
+                    self.initdata();
                 });
 
                 //new BK.Game({
@@ -196,7 +197,7 @@ module.exports = {
         BK.QQ.getRankListWithoutRoom(attr, order, rankType, function(errCode, cmd, data) {
             BK.Script.log(1,1,"-------getAvatarUrl callback  cmd" + cmd + " errCode:" + errCode + "  data:" + JSON.stringify(data));
             // 返回错误码信息
-            if (errCode !== 0) {
+            if (errCode != 0) {
                 BK.Script.log(1,1,'------获取排行榜数据失败!错误码：' + errCode);
             }
             // 解析数据
@@ -206,6 +207,7 @@ module.exports = {
                     if(rd.selfFlag)
                     {
                         self.avatarUrl = rd.url;
+                        self.userName = rd.nick;
                         break;
                     }
                 }

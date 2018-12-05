@@ -34,10 +34,13 @@
       },
       {
         "__id__": 10
+      },
+      {
+        "__id__": 11
       }
     ],
     "_prefab": {
-      "__id__": 11
+      "__id__": 12
     },
     "_opacity": 255,
     "_color": {
@@ -65,8 +68,8 @@
     },
     "_scale": {
       "__type__": "cc.Vec3",
-      "x": 1,
-      "y": 1,
+      "x": 0.7,
+      "y": 0.7,
       "z": 1
     },
     "_rotationX": 0,
@@ -296,27 +299,6 @@
       "__id__": 1
     },
     "_enabled": true,
-    "tag": 0,
-    "_offset": {
-      "__type__": "cc.Vec2",
-      "x": 0,
-      "y": -33.60000000000001
-    },
-    "_size": {
-      "__type__": "cc.Size",
-      "width": 65,
-      "height": 112
-    },
-    "_id": ""
-  },
-  {
-    "__type__": "cc.BoxCollider",
-    "_name": "",
-    "_objFlags": 0,
-    "node": {
-      "__id__": 1
-    },
-    "_enabled": true,
     "tag": 1,
     "_offset": {
       "__type__": "cc.Vec2",
@@ -340,9 +322,6 @@
     "_enabled": true,
     "speed": 400,
     "rotateSpeed": 120,
-    "pstreak": {
-      "__uuid__": "46ec2be7-1c96-455b-9966-c5cf8e9add90"
-    },
     "pspeeds": [
       {
         "__uuid__": "06c3d07d-a2e9-48c0-840d-34c82d915bdb"
@@ -368,6 +347,56 @@
     },
     "pbaohu": {
       "__uuid__": "dbaa7534-409e-4381-866a-5374ff4860b6"
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.RigidBody",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "_type": 2,
+    "_allowSleep": true,
+    "_gravityScale": 1,
+    "_linearDamping": 0,
+    "_angularDamping": 1,
+    "_linearVelocity": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "_angularVelocity": 0,
+    "_fixedRotation": false,
+    "enabledContactListener": true,
+    "bullet": true,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.PhysicsBoxCollider",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "tag": 0,
+    "_density": 100,
+    "_sensor": false,
+    "_friction": 0,
+    "_restitution": 0.2,
+    "body": null,
+    "_offset": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": -33.60000000000001
+    },
+    "_size": {
+      "__type__": "cc.Size",
+      "width": 65,
+      "height": 112
     },
     "_id": ""
   },

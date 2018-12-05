@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>疯狂漂移</title>
+
+  <!--http://www.html5rocks.com/en/mobile/mobifying/-->
+  <meta name="viewport"
+        content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1"/>
+
+  <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- force webkit on 360 -->
+  <meta name="renderer" content="webkit"/>
+  <meta name="force-rendering" content="webkit"/>
+  <!-- force edge on IE -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <!-- force full screen on some browser -->
+  <meta name="full-screen" content="yes"/>
+  <meta name="x5-fullscreen" content="true"/>
+  <meta name="360-fullscreen" content="true"/>
+  
+  <!-- force screen orientation on some browser -->
+  <meta name="screen-orientation" content=""/>
+  <meta name="x5-orientation" content="">
+
+  <!--fix fireball/issues/3568 -->
+  <!--<meta name="browsermode" content="application">-->
+  <meta name="x5-page-mode" content="app">
+
+  <link rel="stylesheet" type="text/css" href="style-mobile.css?_gameid=4599"/>
+  <script src="qqPlayCore.js?_gameid=4599"></script>
+  <script type="text/javascript">
+    // 必须引入
+            new window.Game(
+                {
+                    // 获得 GameStatusInfo 游戏信息
+                    onLoad: function (app) { 
+                        BK.Script.log(1, 0, "onInitGlobalVar + GameStatusInfo" + JSON.stringify(GameStatusInfo));
+                        /// 个人信息相关
+                        openid = GameStatusInfo.openId; // openId
+                        // getUserName(); // 获取昵称
+                        // getUserIcon(); // 获取头像
+                        // getOpenKey(); // 获取 openKey
+
+                        /// 分享相关
+                        // shareToMQQ(); // 分享到 QQ （不推荐使用）
+                        // shareToArk(); // 分享到 ARK
+                        // shareToArkFromFile(); // 从本地路径下的图片分享到 ARK
+
+                        /// 排行榜
+                        // upScore(); // 上传分数（带 RoomId）
+                        // getRankList(); // 获取好友排行榜 （带 RoomId）
+                        // uploadScoreWithoutRoom(); // 上传分数（不带 RoomId）
+                        // getRankListWithoutRoom(); 获取好友排行榜 （不带 RoomId）
+
+                        /// 支付
+                        // qPayPurchase(); // 道具购买
+                        // consumeItems(); // 道具消耗
+                        // getGameItemList(); // 获取游戏所有道具
+                        // getUserGameItems(); //  获取用户拥有的游戏道具
+                    },
+                    
+                    // 点击通用组件分享，这里只需要提供分享数据（主动分享的调用 BK.QQ.shareToArk 和 BK.QQ.shareToMQQ 接口）
+                    onShare: function (app) { 
+                        BK.Script.log(0, 0, "onShare");
+                        return{
+                                summary:"一起来玩厘米游戏",
+                                picUrl:"http://mat1.gtimg.com/ipad/qq_time/imgs/20180321_chunfen.jpg",
+                                gameId:GameStatusInfo.gameId,
+                                roomId:0,
+                                isSelectFriend:1,
+                                extendInfo:"a=1&b=2"
+                            };
+                    }
+                }
+            );
+  </script>
+</head>
+<body>
+  <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
+  <div id="splash">
+    <div class="progress-bar stripes">
+      <span style="width: 0%"></span>
+    </div>
+  </div>
+
+<script type="text/javascript">
+(function () {
+    // open web debugger console
+
+    if (typeof VConsole !== 'undefined') {
+        window.vConsole = new VConsole();
+    }
+
+    var mqqplaygame = document.createElement('script');
+    mqqplaygame.src = "mqqplaygame.js?_gameid=4599";
+    document.body.appendChild(mqqplaygame);
+
+    var settings = document.createElement('script');
+    settings.src = "src/settings.js?_gameid=4599";
+    document.body.appendChild(settings);
+    var main = document.createElement('script');
+    main.src = "main.js?_gameid=4599";
+    document.body.appendChild(main);
+
+    var splash = document.getElementById('splash');
+    splash.style.display = 'block';
+
+    var cocos2d = document.createElement('script');
+    cocos2d.async = true;
+    cocos2d.src = 'cocos2d-js-min.js?_gameid=4599';
+
+    var engineLoaded = function () {
+        document.body.removeChild(cocos2d);
+        cocos2d.removeEventListener('load', engineLoaded, false);
+        window.boot();
+    };
+    cocos2d.addEventListener('load', engineLoaded, false);
+    document.body.appendChild(cocos2d);
+})();
+</script>
+</body>
+</html>

@@ -54,13 +54,23 @@ cc.Class({
             this.main.qianqista.rankScore(function(res){
                 self.main.worldrank = res.data;
                 self.worldData = res.data;
-                self.addWorldItem();
+                self.node_content.runAction(cc.sequence(
+                    cc.delayTime(0.06),
+                    cc.callFunc(function(){
+                        self.addWorldItem();
+                    })
+                ));
             });
         }
         else
         {
             this.worldData = this.main.worldrank;
-            this.addWorldItem();
+            this.node_content.runAction(cc.sequence(
+                cc.delayTime(0.06),
+                cc.callFunc(function(){
+                    self.addWorldItem();
+                })
+            ));
         }
     },
 
@@ -81,7 +91,12 @@ cc.Class({
 
         if(this.friendData)
         {
-            this.addFriendItem();
+            this.node_content.runAction(cc.sequence(
+                cc.delayTime(0.06),
+                cc.callFunc(function(){
+                    self.addFriendItem();
+                })
+            ));
         }
         else
         {
@@ -90,7 +105,14 @@ cc.Class({
                 {
                     self.friendData = res;
                     if(self.world.getComponent("cc.Button").interactable)
-                        self.addFriendItem();
+                    {
+                        self.node_content.runAction(cc.sequence(
+                            cc.delayTime(0.06),
+                            cc.callFunc(function(){
+                                self.addFriendItem();
+                            })
+                        ));
+                    }
                 }
             });
         }
@@ -100,6 +122,8 @@ cc.Class({
     addWorldItem: function()
     {
         var self = this;
+        if(self.world.getComponent("cc.Button").interactable)
+            return;
         var rnum = this.node_content.childrenCount;
         if(rnum < this.worldData.length)
         {
@@ -120,7 +144,10 @@ cc.Class({
             score.getComponent("cc.Label").string = data.score+"";
 
             if(data.openid==this.main.qianqista.openid)
+            {
                 bg.active = true;
+            }
+
 
             this.node_content.addChild(pitem);
 
@@ -136,6 +163,8 @@ cc.Class({
     addFriendItem: function()
     {
         var self = this;
+        if(!self.world.getComponent("cc.Button").interactable)
+            return;
         var rnum = this.node_content.childrenCount;
         if(rnum < this.friendData.length)
         {
@@ -156,7 +185,10 @@ cc.Class({
             score.getComponent("cc.Label").string = data.score+"";
 
             if(data.selfFlag)
+            {
                 bg.active = true;
+            }
+
 
             this.node_content.addChild(pitem);
 

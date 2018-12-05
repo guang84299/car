@@ -7,6 +7,7 @@ cc.Class({
     properties: {
         speed: 400,//速度
         rotateSpeed: 120, // 旋转速度
+        addSpeedRate: 1.6,
 
         pspeeds: {
             default: [],
@@ -67,6 +68,9 @@ cc.Class({
 
         this.streakDt = 0;
         this.isMyCar = true;
+        this.isAddSpeed = storage.getAddSpeed();
+        if(this.isAddSpeed)
+            this.speed = config.myCarSpeed*this.addSpeedRate;
 
         this.initSpeed();
         this.initUI();
@@ -94,13 +98,21 @@ cc.Class({
 
     initSpeed: function()
     {
-        //this.body.linearVelocity = cc.v2(0,this.speed);
+        this.body.linearVelocity = cc.v2(0,this.speed);
         this.updateShadow();
+    },
+
+    addSpeed: function()
+    {
+        this.isAddSpeed = storage.getAddSpeed();
+        if(this.isAddSpeed)
+            this.speed = config.myCarSpeed*this.addSpeedRate;
+        this.body.linearVelocity = cc.v2(0,this.speed);
     },
 
     changeSpeed: function(dt)
     {
-        this.node.position = this.node.position.add(this.getCurrVec(this.getCurrRad()).mulSelf(dt));
+        //this.node.position = this.node.position.add(this.getCurrVec(this.getCurrRad()).mulSelf(dt));
 
         //this.body.syncPosition();
         //this.node.stopActionByTag(100);
@@ -108,12 +120,12 @@ cc.Class({
         //ac.setTag(100);
         //this.node.runAction(ac);
 
-        this.game.updateCamera();
+        //this.game.updateCamera();
     },
 
     addBaoHu: function(time)
     {
-        time = 100000;
+        //time = 100000;
         var self = this;
         this.isBaoHu = true;
 
@@ -166,8 +178,9 @@ cc.Class({
 
         this.eatrange.runAction(cc.repeatForever(
             cc.sequence(
-                cc.scaleTo(1,0.5).easing(cc.easeSineOut()),
-                cc.scaleTo(1,1).easing(cc.easeSineOut())
+                cc.scaleTo(0,1).easing(cc.easeSineOut()),
+                cc.scaleTo(1,0).easing(cc.easeSineOut()),
+                cc.delayTime(0.5)
             )
         ));
     },
@@ -209,19 +222,23 @@ cc.Class({
         var self = this;
         this.hotNum = 0;
         this.speed = config.myCarSpeed*1.5;
+        if(this.isAddSpeed)
+            this.speed = this.speed*this.addSpeedRate;
         this.rotateSpeed = config.myCarRotateSpeed*2;
-        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
         this.uispeed.active = true;
 
         var time = config.myCarHot[storage.getHotLv()].time;
 
         var ac2 = cc.sequence(
-            cc.scaleTo(1,1.7).easing(cc.easeSineOut()),
+            cc.scaleTo(1,1.5).easing(cc.easeSineOut()),
             cc.delayTime(time-2),
-            cc.scaleTo(1,1).easing(cc.easeSineOut()),
+            cc.scaleTo(1,0.7).easing(cc.easeSineOut()),
             cc.callFunc(function(){
                 self.speed = config.myCarSpeed;
+                if(self.isAddSpeed)
+                    self.speed = self.speed*self.addSpeedRate;
                 self.rotateSpeed = config.myCarRotateSpeed;
                 self.state = "idle";
                 self.addBaoHu(2);
@@ -254,24 +271,29 @@ cc.Class({
         this.speedNum = 0;
         this.hitNum = 0;
         this.speed = config.myCarSpeed*1.5;
+        if(this.isAddSpeed)
+            this.speed = this.speed*this.addSpeedRate;
         this.rotateSpeed = config.myCarRotateSpeed*2;
-        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
         this.uispeed.active = true;
 
         var time = config.myCarHit[storage.getHitLv()].time;
 
         var ac2 = cc.sequence(
-            cc.scaleTo(1,1.3).easing(cc.easeSineOut()),
+            cc.scaleTo(1,1.1).easing(cc.easeSineOut()),
             cc.delayTime(time-2),
-            cc.scaleTo(1,1).easing(cc.easeSineOut()),
+            cc.scaleTo(1,0.7).easing(cc.easeSineOut()),
             cc.callFunc(function(){
                 self.speed = config.myCarSpeed;
+                if(self.isAddSpeed)
+                    self.speed = self.speed*self.addSpeedRate;
                 self.rotateSpeed = config.myCarRotateSpeed;
                 self.state = "idle";
                 self.addBaoHu(2);
                 self.game.finishSpeedUp();
                 self.game.updateHit();
+                self.game.updateSpeedUp();
                 self.uispeed.active = false;
             })
         );
@@ -304,7 +326,9 @@ cc.Class({
             this.node.stopActionByTag(2);
 
             this.speed = config.myCarSpeed*1.5;
-            //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+            if(this.isAddSpeed)
+                this.speed = this.speed*this.addSpeedRate;
+            this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
             this.uispeed.active = true;
 
             var time = config.myCarUp[storage.getSpeedLv()].time;
@@ -313,6 +337,8 @@ cc.Class({
                 cc.delayTime(time),
                 cc.callFunc(function(){
                     self.speed = config.myCarSpeed;
+                    if(self.isAddSpeed)
+                        self.speed = self.speed*self.addSpeedRate;
                     self.game.finishSpeedUp();
                     self.uispeed.active = false;
                 })
@@ -604,11 +630,11 @@ cc.Class({
                 this.dirAng = this.node.rotation - 60;
             }
 
-            //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+            this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
             this.drawStreak();
 
-            //cc.log(dis);
+            //cc.log(this.body.linearVelocity);
         }
         else
         {
@@ -692,7 +718,7 @@ cc.Class({
         {
             this.state = "die";
 
-            //this.body.linearVelocity = cc.v2(0,0);
+            this.body.linearVelocity = cc.v2(0,0);
             this.node.stopAllActions();
             var self = this;
             this.node.runAction(cc.sequence(
@@ -759,7 +785,7 @@ cc.Class({
     // 只在两个碰撞体结束接触时被调用一次
     onEndContact: function (contact, selfCollider, otherCollider) {
 
-        //this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
+        this.body.linearVelocity = this.getCurrVec(this.getCurrRad());
 
 
         //if(this.dirState2 == "left")
@@ -799,7 +825,7 @@ cc.Class({
 
         }
 
-    },
+    }
         /**
          * 当碰撞产生后，碰撞结束前的情况下，每次计算碰撞结果后调用
          * @param  {Collider} other 产生碰撞的另一个碰撞组件
@@ -825,23 +851,23 @@ cc.Class({
      * @param  {Collider} other 产生碰撞的另一个碰撞组件
      * @param  {Collider} self  产生碰撞的自身的碰撞组件
      */
-    onCollisionExit: function (other, self) {
-        //console.log('on collision exit');
-        if(other.tag == self.tag)
-        {
-            if(self.tag == 0)
-            {
-                if(this.state != "die" && !this.hurtState)
-                {
-                    if(!this.isBaoHu && this.state != "hit" && this.state != "hot")
-                        this.hurt();
-                }
-            }
-        }
-        //if(this.dirState == "left")
-        //    this.dirState = "up_left";
-        //else if(this.dirState == "right")
-        //    this.dirState = "up_right";
-    }
+    //onCollisionExit: function (other, self) {
+    //    //console.log('on collision exit');
+    //    if(other.tag == self.tag)
+    //    {
+    //        if(self.tag == 0)
+    //        {
+    //            if(this.state != "die" && !this.hurtState)
+    //            {
+    //                if(!this.isBaoHu && this.state != "hit" && this.state != "hot")
+    //                    this.hurt();
+    //            }
+    //        }
+    //    }
+    //    //if(this.dirState == "left")
+    //    //    this.dirState = "up_left";
+    //    //else if(this.dirState == "right")
+    //    //    this.dirState = "up_right";
+    //}
 
 });

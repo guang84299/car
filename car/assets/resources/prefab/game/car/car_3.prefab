@@ -34,10 +34,13 @@
       },
       {
         "__id__": 10
+      },
+      {
+        "__id__": 11
       }
     ],
     "_prefab": {
-      "__id__": 11
+      "__id__": 12
     },
     "_opacity": 255,
     "_color": {
@@ -296,27 +299,6 @@
       "__id__": 1
     },
     "_enabled": true,
-    "tag": 0,
-    "_offset": {
-      "__type__": "cc.Vec2",
-      "x": 0,
-      "y": -37.800000000000004
-    },
-    "_size": {
-      "__type__": "cc.Size",
-      "width": 67,
-      "height": 126
-    },
-    "_id": ""
-  },
-  {
-    "__type__": "cc.BoxCollider",
-    "_name": "",
-    "_objFlags": 0,
-    "node": {
-      "__id__": 1
-    },
-    "_enabled": true,
     "tag": 1,
     "_offset": {
       "__type__": "cc.Vec2",
@@ -341,12 +323,6 @@
     "speed": 400,
     "rotateSpeed": 120,
     "lv": 3,
-    "pstreak": {
-      "__uuid__": "46ec2be7-1c96-455b-9966-c5cf8e9add90"
-    },
-    "pbaozha": {
-      "__uuid__": "6f165d61-e973-4634-8c75-cdaa03280254"
-    },
     "pdeng1": {
       "__uuid__": "054fa1a2-3e95-4478-809a-932eb926262d"
     },
@@ -355,6 +331,56 @@
     },
     "paim": {
       "__uuid__": "287d4702-544c-4901-943e-2e08f0eb2e3d"
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.RigidBody",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "_type": 2,
+    "_allowSleep": true,
+    "_gravityScale": 1,
+    "_linearDamping": 0,
+    "_angularDamping": 0,
+    "_linearVelocity": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "_angularVelocity": 0,
+    "_fixedRotation": true,
+    "enabledContactListener": true,
+    "bullet": false,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.PhysicsBoxCollider",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "tag": 0,
+    "_density": 1,
+    "_sensor": false,
+    "_friction": 0,
+    "_restitution": 0.2,
+    "body": null,
+    "_offset": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": -37.800000000000004
+    },
+    "_size": {
+      "__type__": "cc.Size",
+      "width": 67,
+      "height": 126
     },
     "_id": ""
   },

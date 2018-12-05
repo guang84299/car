@@ -62,6 +62,8 @@ cc.Class({
         this.shouyi_time = cc.find("shouyi/time",this.node);
         this.shouyi_time_str = this.shouyi_time.getComponent("cc.Label");
 
+        this.skipgame = cc.find("skipgame",this.node);
+
 
         this.max_point.string = cc.i18n.t('over_label_text.max_point') + storage.castPoint(storage.getMaxPoint());
         this.curr_point.string = cc.i18n.t('over_label_text.curr_point') + storage.castPoint(cc.mydata.point);
@@ -71,6 +73,26 @@ cc.Class({
 
         this.updateShouYi();
         this.main.uploadData();
+
+        if(!storage.isMyCarId(2))
+        {
+            this.main.openYouHui();
+        }
+
+        this.skipgame.runAction(cc.repeatForever(cc.sequence(
+            cc.repeat(cc.sequence(
+                cc.rotateBy(0.2,20).easing(cc.easeSineOut()),
+                cc.rotateBy(0.2,-40).easing(cc.easeSineOut()),
+                cc.rotateBy(0.2,20).easing(cc.easeSineOut())
+            ),2),
+            cc.delayTime(3)
+        )));
+        this.skipgame.active = false;
+        if(this.main.GAME.skipgame)
+        {
+            this.skipgame.active = this.main.GAME.skipgame.state ? true : false;
+            this.res.loadPic(this.main.GAME.skipgame.pic,this.skipgame);
+        }
     },
 
     updateUI: function()
@@ -218,6 +240,7 @@ cc.Class({
 
     click: function(event,data)
     {
+        var self = this;
         if(data == "again")
         {
             var game = this.node_gamecan.getComponent("game");
@@ -260,6 +283,20 @@ cc.Class({
         else if(data == "share")
         {
             sdk.share(null,"over");
+        }
+        else if(data == "addspeed")
+        {
+            sdk.showVedio(function(res){
+                if(res)
+                {
+                    storage.setAddSpeed(1);
+                    self.updateAddSpeed();
+                }
+            });
+        }
+        else if(data == "skipgame")
+        {
+            sdk.skipGame(this.main.GAME.skipgame.gameid,this.main.GAME.skipgame.url);
         }
         storage.playSound(this.res.audio_button);
         cc.log(data);
@@ -454,6 +491,19 @@ cc.Class({
                     this.updateShouYi();
                 }
             }
+        }
+    },
+
+    updateAddSpeed: function()
+    {
+        this.node_addspeed = cc.find("addspeed",this.node);
+        if(storage.getAddSpeed())
+        {
+            this.res.setSpriteFrame("images/main/addspeed_2",this.node_addspeed);
+        }
+        else
+        {
+            this.res.setSpriteFrame("images/main/addspeed_1",this.node_addspeed);
         }
     },
 
